@@ -8,6 +8,9 @@ staging-settings:
     workflow-path: "./main.ts"
     config-path: "./config.staging.json"
     secrets-path: "../secrets.yaml"
+  write-target:
+    chain-name: base-testnet-sepolia
+    contract-address: "${RECEIVER_ADDRESS}"
 
 # ==========================================================================
 production-settings:
@@ -17,3 +20,6 @@ production-settings:
     workflow-path: "./main.ts"
     config-path: "./config.production.json"
     secrets-path: "../secrets.yaml"
+  write-target:
+    chain-name: base-testnet-sepolia
+    contract-address: "${RECEIVER_ADDRESS}"

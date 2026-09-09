@@ -10,6 +10,7 @@ import {FlintBatch} from "../src/core/FlintBatch.sol";
 import {FlintIdentity} from "../src/identity/FlintIdentity.sol";
 import {ProportionalPolicy} from "../src/policies/ProportionalPolicy.sol";
 import {SqrtPolicy} from "../src/policies/SqrtPolicy.sol";
+import {FlintScorerReceiver} from "../src/core/FlintScorerReceiver.sol";
 /// @title Deploy
 /// @notice Deploys all Flint protocol contracts
 contract Deploy is Script {
@@ -60,23 +61,32 @@ contract Deploy is Script {
         );
         console.log("FlintRegistry deployed at:", address(registry));
 
-        // 6. Authorize Escrow and Grant as receipt minters
+        // 6. Deploy CRE scorer receiver
+        FlintScorerReceiver receiver = new FlintScorerReceiver(deployer, address(escrow));
+        console.log("FlintScorerReceiver deployed at:", address(receiver));
+
+        // 7. Authorize Escrow and Grant as receipt minters
         receipt.setMinter(address(escrow), true);
         receipt.setMinter(address(grant_), true);
         console.log("Escrow and Grant authorized as receipt minters");
+
+        // 8. Authorize receiver as scorer on Escrow
+        escrow.setScorer(address(receiver), true);
+        console.log("FlintScorerReceiver authorized as scorer");
 
         vm.stopBroadcast();
 
         console.log("");
         console.log("=== Deployment Summary ===");
-        console.log("FlintRegistry:      ", address(registry));
-        console.log("FlintEscrow:        ", address(escrow));
-        console.log("FlintGrant:         ", address(grant_));
-        console.log("FlintBatch:         ", address(batch));
-        console.log("FlintReceipt:       ", address(receipt));
-        console.log("FlintIdentity:      ", address(identity));
-        console.log("ProportionalPolicy: ", address(proportional));
-        console.log("SqrtPolicy:         ", address(sqrt));
-        console.log("USDC (Base Sepolia):", USDC_BASE_SEPOLIA);
+        console.log("FlintRegistry:       ", address(registry));
+        console.log("FlintEscrow:         ", address(escrow));
+        console.log("FlintGrant:          ", address(grant_));
+        console.log("FlintBatch:          ", address(batch));
+        console.log("FlintReceipt:        ", address(receipt));
+        console.log("FlintIdentity:       ", address(identity));
+        console.log("FlintScorerReceiver: ", address(receiver));
+        console.log("ProportionalPolicy:  ", address(proportional));
+        console.log("SqrtPolicy:          ", address(sqrt));
+        console.log("USDC (Base Sepolia): ", USDC_BASE_SEPOLIA);
     }
 }
