@@ -10,11 +10,11 @@ import {FlintBatch} from "../src/core/FlintBatch.sol";
 import {FlintIdentity} from "../src/identity/FlintIdentity.sol";
 import {ProportionalPolicy} from "../src/policies/ProportionalPolicy.sol";
 import {SqrtPolicy} from "../src/policies/SqrtPolicy.sol";
-import {MockUSDC} from "../src/mocks/MockUSDC.sol";
-
 /// @title Deploy
 /// @notice Deploys all Flint protocol contracts
 contract Deploy is Script {
+    address constant USDC_BASE_SEPOLIA = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
+
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployer = vm.addr(deployerPrivateKey);
@@ -65,10 +65,6 @@ contract Deploy is Script {
         receipt.setMinter(address(grant_), true);
         console.log("Escrow and Grant authorized as receipt minters");
 
-        // 7. Deploy MockUSDC (testnet only)
-        MockUSDC mockUsdc = new MockUSDC();
-        console.log("MockUSDC deployed at:", address(mockUsdc));
-
         vm.stopBroadcast();
 
         console.log("");
@@ -81,6 +77,6 @@ contract Deploy is Script {
         console.log("FlintIdentity:      ", address(identity));
         console.log("ProportionalPolicy: ", address(proportional));
         console.log("SqrtPolicy:         ", address(sqrt));
-        console.log("MockUSDC:           ", address(mockUsdc));
+        console.log("USDC (Base Sepolia):", USDC_BASE_SEPOLIA);
     }
 }

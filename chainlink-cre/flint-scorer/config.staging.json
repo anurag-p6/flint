@@ -1,0 +1,14 @@
+{
+  "schedule": "0 0 */1 * * *",
+  "repoOwner": "vercel",
+  "repoName": "next.js",
+  "cycleDays": 30,
+  "geminiApiUrl": "https://generativelanguage.googleapis.com",
+  "geminiModel": "gemini-3.5-flash-lite",
+  "contributorMapping": {
+    "spirosikmd": "0x1111111111111111111111111111111111111111",
+    "bgw": "0x2222222222222222222222222222222222222222",
+    "gaearon": "0x3333333333333333333333333333333333333333",
+    "petehunt": "0x4444444444444444444444444444444444444444"
+  }
+}

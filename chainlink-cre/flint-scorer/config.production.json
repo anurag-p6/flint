@@ -1,0 +1,9 @@
+{
+  "schedule": "0 0 1 * * *",
+  "repoOwner": "your-github-org",
+  "repoName": "your-repo",
+  "cycleDays": 30,
+  "geminiApiUrl": "https://generativelanguage.googleapis.com",
+  "geminiModel": "gemini-2.0-flash",
+  "contributorMapping": {}
+}
