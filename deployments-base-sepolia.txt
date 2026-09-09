@@ -1,0 +1,24 @@
+Flint Protocol - Base Sepolia Deployment
+Chain ID: 84532 (base_sepolia)
+Deployer: 0x225Fd0b9D011C8BBffd0f0c6f854Cd23b99B6aF7
+Deploy Command: forge script script/Deploy.s.sol:Deploy --rpc-url base_sepolia --verify --broadcast --legacy
+Status: All (9) contracts verified
+
+FlintRegistry:       0x0B6B4928c3356f3409785999733bA8A4C8763290
+  https://sepolia.basescan.org/address/0x0B6B4928c3356f3409785999733bA8A4C8763290
+FlintEscrow:         0x0D6442af9A6E0Ea494De7f63AA165753588C54F7
+  https://sepolia.basescan.org/address/0x0D6442af9A6E0Ea494De7f63AA165753588C54F7
+FlintGrant:          0xFB4bB23e6A2E9184CA85E0e247150faD1691728C
+  https://sepolia.basescan.org/address/0xFB4bB23e6A2E9184CA85E0e247150faD1691728C
+FlintBatch:          0xB8B276a37b38Fb4108e2C4c429bc6001AE7eF691
+  https://sepolia.basescan.org/address/0xB8B276a37b38Fb4108e2C4c429bc6001AE7eF691
+FlintReceipt:        0x0Fa405194CB82265031894c4FB0Cd03ebB656E93
+  https://sepolia.basescan.org/address/0x0Fa405194CB82265031894c4FB0Cd03ebB656E93
+FlintIdentity:       0xcd7Eb5099ab4d486D32F312F4980bB9384Ec431e
+  https://sepolia.basescan.org/address/0xcd7Eb5099ab4d486D32F312F4980bB9384Ec431e
+ProportionalPolicy:  0xcFd468D416F30637a1A61bb6e6e675CdF3F36ebA
+  https://sepolia.basescan.org/address/0xcFd468D416F30637a1A61bb6e6e675CdF3F36ebA
+SqrtPolicy:          0x31BC0cDd16a8972f2A6b04E0f87bFFcF79b051a9
+  https://sepolia.basescan.org/address/0x31BC0cDd16a8972f2A6b04E0f87bFFcF79b051a9
+MockUSDC:            0x33040f3D47f7Fbfc395cF5126953D913156De70B
+  https://sepolia.basescan.org/address/0x33040f3D47f7Fbfc395cF5126953D913156De70B
