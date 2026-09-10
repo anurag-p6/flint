@@ -12,6 +12,6 @@ export async function GET(request: Request) {
   // For hackathon: store in-memory. Production would use a database.
   console.log(`GitHub App installed: installation_id=${installationId}, action=${setupAction}`)
 
-  const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:3000"
-  return NextResponse.redirect(`${frontendUrl}/dashboard?installation_id=${installationId}`)
+  const origin = new URL(request.url).origin
+  return NextResponse.redirect(`${origin}/dashboard?installation_id=${installationId}`)
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAccount, useConnect, useDisconnect } from "wagmi"
@@ -20,7 +21,19 @@ export function Sidebar() {
   return (
     <aside className="w-[240px] shrink-0 border-r border-gray-100 flex flex-col h-screen sticky top-0">
       <div className="px-6 pt-6 pb-5">
-        <Link href="/" className="text-[16px] font-semibold text-black tracking-tight">
+        <Link href="/" className="flex items-center gap-2.5 text-[16px] font-semibold text-black tracking-tight">
+          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-white">
+            <Image
+              src="/logo.png"
+              alt="Flint logo"
+              width={64}
+              height={64}
+              priority
+              sizes="32px"
+              quality={100}
+              className="h-8 w-8 max-w-none scale-[2.0] object-contain"
+            />
+          </span>
           Flint
         </Link>
         <p className="text-[11px] text-gray-400 mt-0.5">Disbursement protocol</p>

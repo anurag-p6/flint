@@ -16,6 +16,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Flint",
   description: "Trustless disbursement protocol for grants and open source contributions",
+  icons: {
+    icon: "/logo.png",
+  },
 }
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

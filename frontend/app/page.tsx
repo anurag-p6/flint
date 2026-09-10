@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 
 const features = [
@@ -26,7 +27,21 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
-        <span className="text-[15px] font-semibold text-black tracking-tight">Flint</span>
+        <span className="flex items-center gap-2.5 text-[15px] font-semibold text-black tracking-tight">
+          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-white">
+            <Image
+              src="/logo.png"
+              alt="Flint logo"
+              width={64}
+              height={64}
+              priority
+              sizes="32px"
+              quality={100}
+              className="h-8 w-8 max-w-none scale-[2.0] object-contain"
+            />
+          </span>
+          Flint
+        </span>
         <div className="flex items-center gap-3">
           <a
             href="https://github.com/apps/flint-dev/installations/new"
