@@ -11,7 +11,7 @@ const features = [
   },
   {
     title: "Hardware approval",
-    desc: "Every payout requires a physical Ledger confirmation. No funds move without a button press.",
+    desc: "Every payout needs a one-click approval from the maintainer's wallet. No funds move without a signature.",
   },
   {
     title: "On-chain audit trail",
@@ -67,7 +67,7 @@ export default function Home() {
               Trustless disbursement for grants<br />and open source contributions
             </h1>
             <p className="text-[15px] text-gray-700 leading-relaxed max-w-lg">
-              Work verified inside a TEE. Ledger proves a human approved. Blockchain records
+              Work verified inside a TEE. The maintainer's signature approves every payout. Blockchain records
               everything. No spreadsheets, no manual transfers, no trust required.
             </p>
 
@@ -121,7 +121,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-gray-100 px-8 py-8 text-center text-[12px] text-gray-400">
-        <p>Built for ETHOnline 2025 • Chainlink CRE • Ledger • The Graph</p>
+        <p>Built for ETHOnline 2026 • Chainlink CRE • Privy • The Graph</p>
       </footer>
     </div>
   )

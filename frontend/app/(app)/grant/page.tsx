@@ -7,6 +7,7 @@ import { addresses, USDC_ADDRESS } from "@/lib/contracts"
 import { truncateAddress } from "@/lib/utils"
 import { useGitHubStore } from "@/lib/github-store"
 import { RepoSwitcher } from "@/components/repo-switcher"
+import { BridgeFunds } from "@/components/bridge-funds"
 import grantAbi from "@/lib/abi/FlintGrant.json"
 import type { Milestone } from "@/app/api/github/milestones/route"
 
@@ -123,7 +124,7 @@ export default function GrantPage() {
           <div className="grid grid-cols-3 gap-4">
             <MetricCard label="Grant contract" value={truncateAddress(addresses.grant)} mono />
             <MetricCard label="Auto-release" value="14 days" />
-            <MetricCard label="Approval" value="Ledger" />
+            <MetricCard label="Approval" value="Privy signer" />
           </div>
           <div className="border-t border-gray-100 pt-6">
             <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-4">Grant lifecycle</p>
@@ -133,7 +134,7 @@ export default function GrantPage() {
                 { step: "02", text: "Each milestone is a GitHub issue with label 'flint' and release: X% in the body" },
                 { step: "03", text: "Grantee closes the issue when milestone is complete" },
                 { step: "04", text: "CRE agent verifies linked PRs are merged" },
-                { step: "05", text: "Grantor approves tranche release with Ledger → USDC sent" },
+                { step: "05", text: "Grantor approves tranche release → USDC sent" },
               ].map((s) => (
                 <div key={s.step} className="flex items-start gap-3">
                   <span className="text-[11px] text-gray-400 font-mono pt-0.5">{s.step}</span>
@@ -162,11 +163,14 @@ export default function GrantPage() {
 
           {/* Create grant or link existing */}
           {!hasGrant ? (
-            <CreateGrantForm
+            <>
+              <BridgeFunds />
+              <CreateGrantForm
               ghMilestones={ghMilestones}
               isConnected={isConnected}
               onCreated={(id) => setGrantId(id)}
-            />
+              />
+            </>
           ) : (
             <div className="flex items-center gap-3 px-4 py-3 border border-gray-100 rounded-md">
               <span className="w-1.5 h-1.5 rounded-full bg-green" />
@@ -247,7 +251,7 @@ function CreateGrantForm({
   onCreated: (id: bigint) => void
 }) {
   const [grantee, setGrantee] = useState("")
-  const [ledgerApprover, setLedgerApprover] = useState("")
+  const [approver, setApprover] = useState("")
   const [totalUsdc, setTotalUsdc] = useState("")
   const [step, setStep] = useState<"idle" | "approving" | "creating">("idle")
   const { writeContractAsync } = useWriteContract()
@@ -257,7 +261,7 @@ function CreateGrantForm({
   const bpsValid = totalBps === 10000
 
   const handleCreate = async () => {
-    if (!grantee || !ledgerApprover || !totalUsdc) return
+    if (!grantee || !approver || !totalUsdc) return
     const amount = parseUnits(totalUsdc, 6)
 
     try {
@@ -280,7 +284,7 @@ function CreateGrantForm({
           grantee as `0x${string}`,
           USDC_ADDRESS as `0x${string}`,
           amount,
-          ledgerApprover as `0x${string}`,
+          approver as `0x${string}`,
           validMilestones.map((m) => m.title),
           validMilestones.map((m) => BigInt(Math.round((m.releasePercent ?? 0) * 100))),
           validMilestones.map(() => 0n),
@@ -310,10 +314,10 @@ function CreateGrantForm({
           />
         </div>
         <div>
-          <label className="text-[11px] text-gray-400 mb-1 block">Ledger approver</label>
+          <label className="text-[11px] text-gray-400 mb-1 block">Approver wallet (Privy)</label>
           <input
-            value={ledgerApprover}
-            onChange={(e) => setLedgerApprover(e.target.value)}
+            value={approver}
+            onChange={(e) => setApprover(e.target.value)}
             placeholder="0x..."
             className="w-full border border-gray-100 px-3 py-2 text-[12px] rounded-md focus:border-accent focus:outline-none font-mono"
           />
@@ -354,7 +358,7 @@ function CreateGrantForm({
 
       <button
         onClick={handleCreate}
-        disabled={step !== "idle" || !grantee || !ledgerApprover || !totalUsdc || !bpsValid || validMilestones.length === 0}
+        disabled={step !== "idle" || !grantee || !approver || !totalUsdc || !bpsValid || validMilestones.length === 0}
         className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 disabled:opacity-40 transition-colors"
       >
         {step === "approving" ? "Approving USDC..." : step === "creating" ? "Creating grant..." : "Create grant"}

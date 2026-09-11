@@ -3,22 +3,14 @@
 import { useReadContract } from "wagmi"
 import { keccak256, encodePacked } from "viem"
 import { useState, useEffect } from "react"
-import dynamic from "next/dynamic"
 import { addresses } from "@/lib/contracts"
 import { truncateAddress, formatScore } from "@/lib/utils"
 import { useGitHubStore } from "@/lib/github-store"
 import { RepoSwitcher } from "@/components/repo-switcher"
+import { PrivyWalletButton } from "@/components/privy-auth"
+import { PrivyApprovePanel } from "@/components/privy-approve-panel"
+import { privyEnabled } from "@/lib/privy/config"
 import escrowAbi from "@/lib/abi/FlintEscrow.json"
-
-// Ledger USB touches WebHID: client-only, never SSR.
-const LedgerConnectRow = dynamic(
-  () => import("@/components/ledger-panel").then((m) => m.LedgerConnectRow),
-  { ssr: false },
-)
-const LedgerApprovePanel = dynamic(
-  () => import("@/components/ledger-panel").then((m) => m.LedgerApprovePanel),
-  { ssr: false },
-)
 
 type PoolStatus = "Active" | "ScoresSubmitted" | "Approved" | "Paid" | "Reclaimed"
 const STATUS_LABELS: PoolStatus[] = ["Active", "ScoresSubmitted", "Approved", "Paid", "Reclaimed"]
@@ -125,19 +117,19 @@ export default function DashboardPage() {
           <RepoSwitcher />
         </div>
         {connectedRepo && (
-          <a
-            href={`https://github.com/${connectedRepo}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1.5 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
-          >
-            View on GitHub
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href={`https://github.com/${connectedRepo}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+            >
+              View on GitHub
+            </a>
+            <PrivyWalletButton />
+          </div>
         )}
       </div>
-
-      {/* Ledger connection (USB direct or wallet app) */}
-      <LedgerConnectRow />
 
       {/* No repo selected */}
       {!connectedRepo && (
@@ -154,7 +146,7 @@ export default function DashboardPage() {
                 { step: "01", text: "Maintainer creates a pool with USDC deposit and repo ID" },
                 { step: "02", text: "CRE agent fetches GitHub data and scores contributors inside TEE" },
                 { step: "03", text: "Scores submitted on-chain via DON consensus" },
-                { step: "04", text: "Maintainer reviews scores and approves payout with Ledger" },
+                { step: "04", text: "Maintainer reviews scores and approves payout on-chain" },
                 { step: "05", text: "USDC distributed, ERC-5484 soulbound receipts minted" },
               ].map((s) => (
                 <div key={s.step} className="flex items-start gap-3">
@@ -185,19 +177,24 @@ export default function DashboardPage() {
                 <MetricCard label="Status" value={status === "ScoresSubmitted" ? "Scores submitted" : status!} />
                 <MetricCard label="Scored" value={onChainScores.length > 0 ? `${onChainScores.length} addresses` : "Pending"} />
               </div>
-              {status === "ScoresSubmitted" && (
-                <LedgerApprovePanel
-                  repoId={repoId!}
-                  ledgerSigner={pool[4] as string}
-                  payoutPolicy={pool[3] as string}
-                  totalAmount={totalAmount}
-                  scores={onChainScores.map((s: any) => ({
-                    contributor: s.contributor as string,
-                    score: BigInt(s.score),
-                  }))}
-                  usernameFor={(w: string) => walletToLogin[w.toLowerCase()]}
-                />
-              )}
+              {status === "ScoresSubmitted" &&
+                (privyEnabled ? (
+                  <PrivyApprovePanel
+                    repoId={repoId!}
+                    signer={pool[4] as string}
+                    payoutPolicy={pool[3] as string}
+                    totalAmount={totalAmount}
+                    scores={onChainScores.map((s: any) => ({
+                      contributor: s.contributor as string,
+                      score: BigInt(s.score),
+                    }))}
+                    usernameFor={(w: string) => walletToLogin[w.toLowerCase()]}
+                  />
+                ) : (
+                  <p className="text-[12px] text-amber">
+                    Set NEXT_PUBLIC_PRIVY_APP_ID in .env to enable one-click payout approval.
+                  </p>
+                ))}
             </div>
           )}
 

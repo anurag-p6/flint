@@ -1,13 +1,14 @@
 "use client"
 
-import { useAccount, useConnect, useDisconnect } from "wagmi"
-import { injected } from "wagmi/connectors"
+import { useState } from "react"
+import { useAccount, useDisconnect } from "wagmi"
 import { truncateAddress } from "@/lib/utils"
+import { ConnectWalletDialog } from "@/components/connect-wallet-dialog"
 
 export function ConnectButton() {
   const { address, isConnected } = useAccount()
-  const { connect } = useConnect()
   const { disconnect } = useDisconnect()
+  const [open, setOpen] = useState(false)
 
   if (isConnected && address) {
     return (
@@ -21,11 +22,14 @@ export function ConnectButton() {
   }
 
   return (
-    <button
-      onClick={() => connect({ connector: injected() })}
-      className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
-    >
-      Connect wallet
-    </button>
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
+      >
+        Connect wallet
+      </button>
+      <ConnectWalletDialog open={open} onClose={() => setOpen(false)} />
+    </>
   )
 }
