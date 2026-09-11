@@ -18,6 +18,8 @@ export function isWebHidSupported(): boolean {
 
 /// Singleton DMK instance. Client-only: throws during SSR and where WebHID is missing.
 /// Module scope is SSR-safe (no `navigator` access at import time).
+/// DMK's WebHID discovery opens the browser device picker itself — never call
+/// `navigator.hid.requestDevice()` alongside it (two pickers fight over the device).
 export function getDmk(): DeviceManagementKit {
   if (typeof window === "undefined") {
     throw new Error("Ledger DMK can only be used in the browser");

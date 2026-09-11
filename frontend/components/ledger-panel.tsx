@@ -52,10 +52,57 @@ function calculatePayoutPreview(
   return payouts
 }
 
-// ─── Connect row ─────────────────────────────────────────────────────────────
+// ─── WebHID diagnostic ─────────────────────────────────────────────────────
+
+function WebHidDiagnostic() {
+  const [diagnostic, setDiagnostic] = useState<string | null>(null)
+  const [checking, setChecking] = useState(false)
+
+  const runCheck = async () => {
+    setChecking(true)
+    setDiagnostic(null)
+    try {
+      if (!isWebHidSupported()) {
+        setDiagnostic("WebHID is not supported in this browser. Use desktop Chrome, Edge, or Brave.")
+        return
+      }
+      setDiagnostic("Browser supports WebHID. Unlock your Ledger, open the Ethereum app, then click Connect Ledger.")
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  return (
+    <details className="border border-gray-100 rounded-md px-4 py-3">
+      <summary className="text-[12px] text-gray-500 cursor-pointer hover:text-gray-700">
+        🔍 WebHID diagnostic
+      </summary>
+      <div className="mt-3 space-y-2">
+        <button
+          onClick={runCheck}
+          disabled={checking}
+          className="px-3 py-1.5 text-[12px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors disabled:opacity-60"
+        >
+          {checking ? "Checking…" : "Run diagnostic"}
+        </button>
+        {diagnostic && (
+          <p className="text-[12px] text-gray-700 bg-gray-50 rounded px-3 py-2">{diagnostic}</p>
+        )}
+        <p className="text-[11px] text-gray-400">
+          Requires desktop Chrome, Edge, or Brave over HTTPS (or localhost).
+          Unlock the Ledger, open the Ethereum app, turn auto-lock OFF
+          (device Settings → Security). Close Ledger Live and keep a single tab open —
+          only one app can hold the USB device at a time.
+        </p>
+      </div>
+    </details>
+  )
+}
+
+// ─── Connect row ───────────────────────────────────────────────────────────
 
 export function LedgerConnectRow() {
-  const { transport, deviceAddress, status, error, errorKind, connectUsb, useCompanion, disconnect, clearError } =
+  const { transport, deviceAddress, status, prompt, error, errorKind, connectUsb, useCompanion, disconnect, clearError, retry } =
     useLedgerStore()
   const { address: wagmiAddress } = useAccount()
   const [busy, setBusy] = useState(false)
@@ -115,19 +162,37 @@ export function LedgerConnectRow() {
           <span className="text-[11px] text-gray-400">USB needs desktop Chrome/Edge</span>
         )}
       </div>
+      {status === "connecting" && prompt && (
+        <p className="flex items-center gap-2 text-[12px] text-gray-700 bg-gray-50 rounded px-3 py-2">
+          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber shrink-0" />
+          {prompt}
+        </p>
+      )}
       {status === "error" && error && (
-        <div className="flex items-center gap-2">
-          <p className={`text-[12px] ${errorKind === "rejected" ? "text-amber" : "text-red"}`}>{error}</p>
-          <button onClick={clearError} className="text-[11px] text-gray-400 hover:text-gray-700">
-            Dismiss
-          </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className={`text-[12px] ${errorKind === "rejected" || errorKind === "dismissed" ? "text-amber" : "text-red"}`}>
+            {error}
+          </p>
+          {errorKind === "webhid-blocked" || errorKind === "no-device" ? (
+            <button
+              onClick={retry}
+              className="px-3 py-1 text-[11px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
+            >
+              Retry
+            </button>
+          ) : (
+            <button onClick={clearError} className="text-[11px] text-gray-400 hover:text-gray-700">
+              Dismiss
+            </button>
+          )}
         </div>
       )}
+      <WebHidDiagnostic />
     </div>
   )
 }
 
-// ─── Approve panel ───────────────────────────────────────────────────────────
+// ─── Approve panel ───────────────────────────────────────────────────────
 
 export interface ApproveScore {
   contributor: string
@@ -269,8 +334,8 @@ export function LedgerApprovePanel({
   const phaseLabel =
     phase === "switching"
       ? "Switching network…"
-      : phase === "signing"
-        ? "Confirm on your Ledger device…"
+        : phase === "signing"
+          ? "Review the hash on your Ledger (Ethereum app) and approve…"
         : phase === "verifying"
           ? "Verifying signature…"
           : phase === "submitting"

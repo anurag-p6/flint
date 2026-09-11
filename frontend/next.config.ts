@@ -11,4 +11,18 @@ const nextConfig: NextConfig = {
   ],
 };
 
+const headers = async () => {
+  return ( [
+    {
+      source: '/(.*)',
+      headers: [
+        {
+          key: 'Permissions-Policy',
+          value: 'hid=*'
+        }
+      ]
+    }
+  ]
+)};
+
 export default nextConfig;

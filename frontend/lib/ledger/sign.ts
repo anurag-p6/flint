@@ -77,9 +77,11 @@ export async function signApprovalHash(
   const sig = await awaitDeviceAction<{ r: Hex; s: Hex; v: number }>(
     observable as Observable<DeviceActionStateLike>,
   );
+  // Normalize v to 27/28 (some transports return 0/1) before packing 0x{r}{s}{v}.
+  const v = sig.v < 27 ? sig.v + 27 : sig.v;
   return concatHex([
     pad(sig.r, { size: 32 }),
     pad(sig.s, { size: 32 }),
-    numberToHex(sig.v, { size: 1 }),
+    numberToHex(v, { size: 1 }),
   ]);
 }
