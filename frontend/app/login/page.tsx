@@ -24,11 +24,10 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-8">
           <div className="flex items-center gap-2">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="Flint"
-              width={40}
-              height={40}
-              className="rounded-md"
+              width={52}
+              height={52}
             />
             <h1 className="text-[24px] font-semibold text-black">Flint</h1>
           </div>

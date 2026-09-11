@@ -17,12 +17,11 @@ export function Sidebar() {
   return (
     <aside className="w-[240px] shrink-0 border-r border-gray-100 flex flex-col h-screen sticky top-0">
       {/* Logo */}
-      <div className="px-6 pt-6 pb-6 border-b border-gray-100">
-        <Link href="/" className="flex items-center gap-1.5 text-[18px] font-semibold text-black tracking-tight">
-          <Image src="/logo.png" alt="Flint logo" width={32} height={32} priority className="rounded-md" />
+      <div className="px-6 pt-5 pb-5 border-b border-gray-100">
+        <Link href="/" className="flex items-center gap-1 text-[20px] font-semibold text-black tracking-tight">
+          <Image src="/logo.svg" alt="Flint logo" width={34} height={34} priority />
           Flint
         </Link>
-        <p className="text-[11px] text-gray-400 mt-1">Disbursement protocol</p>
       </div>
 
       {/* Navigation */}

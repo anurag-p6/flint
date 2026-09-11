@@ -32,8 +32,8 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
-        <span className="flex items-center gap-1.5 text-[17px] font-semibold text-black tracking-tight">
-          <Image src="/logo.png" alt="Flint logo" width={32} height={32} priority className="rounded-md" />
+        <span className="flex items-center gap-1 text-[19px] font-semibold text-black tracking-tight">
+          <Image src="/logo.svg" alt="Flint logo" width={38} height={38} priority />
           Flint
         </span>
         <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-gray-100 px-8 py-8 text-center text-[12px] text-gray-400">
-        <p>Built for ETHOnline 2026 • Chainlink CRE • Privy • The Graph</p>
+        <p>Built for ETHOnline 2026 • Arc • Chainlink CRE • The Graph</p>
       </footer>
     </div>
   )

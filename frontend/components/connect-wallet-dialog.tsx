@@ -1,9 +1,8 @@
 "use client"
 
 import { useConnect } from "wagmi"
-import { baseSepolia } from "wagmi/chains"
 import type { Connector } from "wagmi"
-import { walletConnectEnabled } from "@/lib/wagmi"
+import { walletConnectEnabled, arcTestnet } from "@/lib/wagmi"
 
 function Row({
   title,
@@ -57,9 +56,9 @@ export function ConnectWalletDialog({
 
   const onSelect = (connector: Connector) => {
     reset()
-    // chainId pins Base Sepolia: wagmi switches after connecting.
+    // chainId pins Arc Testnet: wagmi switches after connecting.
     connect(
-      { connector, chainId: baseSepolia.id },
+      { connector, chainId: arcTestnet.id },
       { onSuccess: onClose },
     )
   }
@@ -84,8 +83,8 @@ export function ConnectWalletDialog({
         </div>
 
         <Row
-          title="Email wallet (Privy)"
-          subtitle="Log in with email on the homepage — no seed phrase"
+          title="Email wallet"
+          subtitle="Log in with email — no seed phrase (Privy)"
           disabled
           onClick={() => {}}
         />
