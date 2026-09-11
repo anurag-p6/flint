@@ -51,16 +51,10 @@ export default function Home() {
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="px-4 py-2 text-[13px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+                className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
               >
                 Sign out
               </button>
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
-              >
-                Dashboard
-              </Link>
             </div>
           ) : null}
         </div>
@@ -82,8 +76,9 @@ export default function Home() {
                 <p className="text-[13px] text-gray-700 font-medium">Connect with GitHub to get started</p>
                 <button
                   onClick={() => signIn("github")}
-                  className="w-full px-5 py-2.5 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
+                  className="w-full px-5 py-2.5 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors flex items-center justify-center gap-2"
                 >
+                  <Image src="/github.svg" alt="GitHub logo" width={18} height={18} />
                   Sign in with GitHub
                 </button>
               </div>

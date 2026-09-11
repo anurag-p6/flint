@@ -1,41 +1,79 @@
 "use client"
 
 import { useReadContract, useWriteContract, useAccount } from "wagmi"
-import { useState } from "react"
-import { addresses } from "@/lib/contracts"
+import { useState, useEffect } from "react"
+import { parseUnits } from "viem"
+import { addresses, USDC_ADDRESS } from "@/lib/contracts"
 import { truncateAddress } from "@/lib/utils"
+import { useGitHubStore } from "@/lib/github-store"
+import { RepoSwitcher } from "@/components/repo-switcher"
 import grantAbi from "@/lib/abi/FlintGrant.json"
+import type { Milestone } from "@/app/api/github/milestones/route"
+
+const ERC20_APPROVE_ABI = [
+  {
+    name: "approve",
+    type: "function",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+  },
+] as const
 
 const MILESTONE_STATUS = ["Pending", "Verified", "Released", "AutoReleased"] as const
-type MilestoneStatus = (typeof MILESTONE_STATUS)[number]
 
-function StatusDot({ status }: { status: string }) {
+function StatusDot({ status, size = "default" }: { status: string; size?: "default" | "sm" }) {
   const color =
     status === "Released" || status === "Auto-released" ? "bg-green" :
-    status === "Verified" ? "bg-amber" :
-    "bg-gray-400"
+    status === "Verified" || status === "closed" ? "bg-amber" :
+    "bg-gray-300"
+  const dotSize = size === "sm" ? "w-1.5 h-1.5" : "w-2 h-2"
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={`w-2 h-2 rounded-full ${color}`} />
-      <span className="text-[13px] text-gray-700">{status}</span>
+      <span className={`${dotSize} rounded-full ${color}`} />
+      <span className={`${size === "sm" ? "text-[11px]" : "text-[13px]"} text-gray-700 capitalize`}>{status}</span>
     </span>
   )
 }
 
-const DEMO_MILESTONES = [
-  { desc: "Ship v1 — core escrow and scoring contracts", tranche: "300 USDC", deadline: "Sep 1", status: "Released" },
-  { desc: "Deploy to testnet with CRE integration", tranche: "300 USDC", deadline: "Sep 8", status: "Verified" },
-  { desc: "Frontend dashboard and Ledger flow", tranche: "200 USDC", deadline: "Sep 12", status: "Pending" },
-  { desc: "Mainnet deployment and audit", tranche: "200 USDC", deadline: "Oct 1", status: "Pending" },
-]
+function MetricCard({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="border border-gray-100 rounded-md px-4 py-3">
+      <p className="text-[11px] text-gray-400 uppercase tracking-wider">{label}</p>
+      <p className={`text-[18px] text-black font-medium mt-1 ${mono ? "font-mono text-[15px]" : ""}`}>{value}</p>
+    </div>
+  )
+}
 
 export default function GrantPage() {
   const { isConnected } = useAccount()
+  const { repo: connectedRepo } = useGitHubStore()
+
+  // GitHub milestones from issues with "flint" label
+  const [ghMilestones, setGhMilestones] = useState<Milestone[]>([])
+  const [ghLoading, setGhLoading] = useState(false)
+
+  // On-chain grant ID (optional manual override)
   const [grantIdInput, setGrantIdInput] = useState("1")
   const [grantId, setGrantId] = useState<bigint | null>(null)
-  const [showDemo, setShowDemo] = useState(false)
 
-  const { data: grantData, isLoading } = useReadContract({
+  useEffect(() => {
+    if (!connectedRepo) {
+      setGhMilestones([])
+      return
+    }
+    setGhLoading(true)
+    fetch(`/api/github/milestones?repo=${connectedRepo}`)
+      .then((r) => r.json())
+      .then((d) => setGhMilestones(d.milestones ?? []))
+      .catch(console.error)
+      .finally(() => setGhLoading(false))
+  }, [connectedRepo])
+
+  const { data: grantData, isLoading: grantLoading } = useReadContract({
     address: addresses.grant as `0x${string}`,
     abi: grantAbi,
     functionName: "grants",
@@ -43,7 +81,7 @@ export default function GrantPage() {
     query: { enabled: grantId !== null },
   })
 
-  const { data: milestonesData } = useReadContract({
+  const { data: onChainMilestones } = useReadContract({
     address: addresses.grant as `0x${string}`,
     abi: grantAbi,
     functionName: "getMilestones",
@@ -52,132 +90,50 @@ export default function GrantPage() {
   })
 
   const grant = grantData as any
-  const milestones = (milestonesData as any[]) ?? []
+  const chainMilestones = (onChainMilestones as any[]) ?? []
   const hasGrant = grant && grant[0] !== "0x0000000000000000000000000000000000000000"
   const totalAmount = hasGrant ? BigInt(grant[3]) : 0n
 
+  const closedCount = ghMilestones.filter((m) => m.status === "closed").length
+  const totalRelease = ghMilestones.reduce((sum, m) => sum + (m.releasePercent ?? 0), 0)
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-[22px] font-semibold text-black">Grants</h1>
-        <p className="text-[13px] text-gray-400 mt-1">Milestone escrow and tranche releases</p>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          value={grantIdInput}
-          onChange={(e) => setGrantIdInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              const id = parseInt(grantIdInput)
-              if (!isNaN(id) && id > 0) setGrantId(BigInt(id))
-            }
-          }}
-          placeholder="Grant ID"
-          className="border border-gray-100 px-3 py-2 text-[13px] rounded-md focus:border-accent focus:outline-none w-32 font-mono"
-        />
-        <button
-          onClick={() => {
-            const id = parseInt(grantIdInput)
-            if (!isNaN(id) && id > 0) setGrantId(BigInt(id))
-          }}
-          className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
-        >
-          Load grant
-        </button>
-        {grantId === null && (
-          <button
-            onClick={() => setShowDemo(!showDemo)}
-            className="px-4 py-2 text-[13px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="space-y-3">
+          <h1 className="text-[22px] font-semibold text-black">Grants</h1>
+          <RepoSwitcher />
+        </div>
+        {connectedRepo && (
+          <a
+            href={`https://github.com/${connectedRepo}/issues?q=label%3Aflint`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-3 py-1.5 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
           >
-            {showDemo ? "Hide demo" : "View demo"}
-          </button>
+            View issues on GitHub
+          </a>
         )}
       </div>
 
-      {grantId !== null && isLoading && (
-        <p className="text-[13px] text-gray-400">Loading...</p>
-      )}
-
-      {grantId !== null && !isLoading && !hasGrant && (
-        <div className="border border-gray-100 rounded-md p-6">
-          <p className="text-[13px] text-gray-700">No grant found with ID {grantId.toString()}</p>
-          <p className="text-[12px] text-gray-400 mt-1">
-            Create a grant by calling <span className="font-mono">FlintGrant.createGrant()</span>
-          </p>
-        </div>
-      )}
-
-      {hasGrant && (
-        <>
-          <div className="flex items-start justify-between">
-            <div>
-              <h2 className="text-[18px] font-semibold text-black">Grant #{grantId!.toString()}</h2>
-              <p className="text-[13px] text-gray-400 mt-1">
-                Grantee: <span className="font-mono">{truncateAddress(grant[1])}</span> · {formatAmount(totalAmount)}
-              </p>
-            </div>
-          </div>
-
+      {/* No repo */}
+      {!connectedRepo && (
+        <div className="space-y-6 pt-2">
           <div className="grid grid-cols-3 gap-4">
-            <div className="border border-gray-100 rounded-md px-4 py-3">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider">Total amount</p>
-              <p className="text-[18px] text-black font-medium mt-1">{formatAmount(totalAmount)}</p>
-            </div>
-            <div className="border border-gray-100 rounded-md px-4 py-3">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider">Milestones</p>
-              <p className="text-[18px] text-black font-medium mt-1">{milestones.length}</p>
-            </div>
-            <div className="border border-gray-100 rounded-md px-4 py-3">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider">Grantor</p>
-              <p className="text-[15px] text-black font-mono font-medium mt-1">{truncateAddress(grant[0])}</p>
-            </div>
+            <MetricCard label="Grant contract" value={truncateAddress(addresses.grant)} mono />
+            <MetricCard label="Auto-release" value="14 days" />
+            <MetricCard label="Approval" value="Ledger" />
           </div>
-
-          {milestones.length > 0 ? (
-            <MilestoneTable
-              milestones={milestones}
-              totalAmount={totalAmount}
-              grantId={grantId!}
-              isConnected={isConnected}
-            />
-          ) : (
-            <div className="border border-gray-100 rounded-md p-6 text-center">
-              <p className="text-[13px] text-gray-700">No milestones defined</p>
-            </div>
-          )}
-        </>
-      )}
-
-      {showDemo && grantId === null && <DemoGrantView />}
-
-      {grantId === null && !showDemo && (
-        <div className="space-y-6 pt-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="border border-gray-100 rounded-md px-4 py-3">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider">Grant contract</p>
-              <p className="text-[15px] text-black font-mono font-medium mt-1">{truncateAddress(addresses.grant)}</p>
-            </div>
-            <div className="border border-gray-100 rounded-md px-4 py-3">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider">Auto-release</p>
-              <p className="text-[18px] text-black font-medium mt-1">14 days</p>
-            </div>
-            <div className="border border-gray-100 rounded-md px-4 py-3">
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider">Approval</p>
-              <p className="text-[18px] text-black font-medium mt-1">Ledger</p>
-            </div>
-          </div>
-
           <div className="border-t border-gray-100 pt-6">
             <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-4">Grant lifecycle</p>
             <div className="space-y-3">
               {[
-                { step: "01", text: "Grantor creates grant with milestones, deadlines, and USDC deposit" },
-                { step: "02", text: "Grantee works on milestones, progress tracked via GitHub" },
-                { step: "03", text: "AI agent verifies milestone completion inside TEE" },
-                { step: "04", text: "Grantor approves tranche release with Ledger" },
-                { step: "05", text: "Auto-release after 14 days if grantor delays (protects grantees)" },
+                { step: "01", text: "Grantor creates grant with USDC deposit on-chain" },
+                { step: "02", text: "Each milestone is a GitHub issue with label 'flint' and release: X% in the body" },
+                { step: "03", text: "Grantee closes the issue when milestone is complete" },
+                { step: "04", text: "CRE agent verifies linked PRs are merged" },
+                { step: "05", text: "Grantor approves tranche release with Ledger → USDC sent" },
               ].map((s) => (
                 <div key={s.step} className="flex items-start gap-3">
                   <span className="text-[11px] text-gray-400 font-mono pt-0.5">{s.step}</span>
@@ -185,120 +141,326 @@ export default function GrantPage() {
                 </div>
               ))}
             </div>
+            <div className="mt-4 bg-gray-50 rounded-md px-4 py-3">
+              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-2">Issue body format</p>
+              <pre className="text-[12px] text-gray-700 font-mono whitespace-pre">{`## Milestone: Ship auth module\n\nBuild OAuth login and session management.\n\ncloses #12\n\n<!-- flint\nrelease: 25%\n-->`}</pre>
+            </div>
           </div>
         </div>
+      )}
+
+      {/* Repo selected — GitHub milestones */}
+      {connectedRepo && (
+        <>
+          {/* Metrics */}
+          <div className="grid grid-cols-4 gap-4">
+            <MetricCard label="Milestones" value={ghMilestones.length.toString()} />
+            <MetricCard label="Completed" value={`${closedCount} / ${ghMilestones.length}`} />
+            <MetricCard label="Total release %" value={`${totalRelease.toFixed(0)}%`} />
+            <MetricCard label="Grant contract" value={truncateAddress(addresses.grant)} mono />
+          </div>
+
+          {/* Create grant or link existing */}
+          {!hasGrant ? (
+            <CreateGrantForm
+              ghMilestones={ghMilestones}
+              isConnected={isConnected}
+              onCreated={(id) => setGrantId(id)}
+            />
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-3 border border-gray-100 rounded-md">
+              <span className="w-1.5 h-1.5 rounded-full bg-green" />
+              <span className="text-[13px] text-gray-700">
+                Grant #{grantId!.toString()} · {formatAmount(totalAmount)} · Grantee:{" "}
+                <span className="font-mono">{truncateAddress(grant[1])}</span>
+              </span>
+              <button
+                onClick={() => setGrantId(null)}
+                className="ml-auto text-[11px] text-gray-400 hover:text-red transition-colors"
+              >
+                Unlink
+              </button>
+            </div>
+          )}
+
+          {/* Or link existing grant ID */}
+          {!hasGrant && (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={grantIdInput}
+                onChange={(e) => setGrantIdInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const id = parseInt(grantIdInput)
+                    if (!isNaN(id) && id > 0) setGrantId(BigInt(id))
+                  }
+                }}
+                placeholder="Or link existing grant ID"
+                className="border border-gray-100 px-3 py-2 text-[13px] rounded-md focus:border-accent focus:outline-none w-52 font-mono"
+              />
+              <button
+                onClick={() => {
+                  const id = parseInt(grantIdInput)
+                  if (!isNaN(id) && id > 0) setGrantId(BigInt(id))
+                }}
+                className="px-4 py-2 text-[13px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+              >
+                Load
+              </button>
+            </div>
+          )}
+
+          {/* Milestones table */}
+          {ghLoading ? (
+            <p className="text-[13px] text-gray-400">Loading milestones...</p>
+          ) : ghMilestones.length === 0 ? (
+            <div className="border border-gray-100 rounded-md p-6">
+              <p className="text-[13px] text-gray-700">No milestones found</p>
+              <p className="text-[12px] text-gray-400 mt-1">
+                Create GitHub issues with the <span className="font-mono bg-gray-100 px-1 rounded">flint</span> label and add{" "}
+                <span className="font-mono bg-gray-100 px-1 rounded">release: X%</span> in the body
+              </p>
+            </div>
+          ) : (
+            <MilestoneTable
+              ghMilestones={ghMilestones}
+              chainMilestones={chainMilestones}
+              totalAmount={totalAmount}
+              grantId={grantId}
+              isConnected={isConnected}
+            />
+          )}
+        </>
       )}
     </div>
   )
 }
 
-function MilestoneTable({ milestones, totalAmount, grantId, isConnected }: {
-  milestones: any[]; totalAmount: bigint; grantId: bigint; isConnected: boolean;
+function CreateGrantForm({
+  ghMilestones,
+  isConnected,
+  onCreated,
+}: {
+  ghMilestones: Milestone[]
+  isConnected: boolean
+  onCreated: (id: bigint) => void
 }) {
-  return (
-    <table className="w-full">
-      <thead>
-        <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
-          <th className="text-left py-3 font-normal w-10">#</th>
-          <th className="text-left py-3 font-normal">Description</th>
-          <th className="text-right py-3 font-normal">Tranche</th>
-          <th className="text-right py-3 font-normal">Deadline</th>
-          <th className="text-right py-3 font-normal">Status</th>
-          <th className="text-right py-3 font-normal w-36"></th>
-        </tr>
-      </thead>
-      <tbody>
-        {milestones.map((m: any, i: number) => {
-          const status = MILESTONE_STATUS[Number(m.status ?? m[3])]
-          const statusLabel = status === "AutoReleased" ? "Auto-released" : status
-          const trancheBps = Number(m.trancheBps ?? m[1])
-          const trancheAmount = (totalAmount * BigInt(trancheBps)) / 10000n
-          const deadline = Number(m.deadline ?? m[2])
-          const deadlineStr = deadline > 0
-            ? new Date(deadline * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-            : "No deadline"
+  const [grantee, setGrantee] = useState("")
+  const [ledgerApprover, setLedgerApprover] = useState("")
+  const [totalUsdc, setTotalUsdc] = useState("")
+  const [step, setStep] = useState<"idle" | "approving" | "creating">("idle")
+  const { writeContractAsync } = useWriteContract()
 
-          return (
-            <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-              <td className="py-3 text-[13px] text-gray-400 font-mono">{String(i + 1).padStart(2, "0")}</td>
-              <td className="py-3 text-[13px] text-gray-700">{m.description ?? m[0]}</td>
-              <td className="py-3 text-[13px] font-mono text-gray-700 text-right">{formatAmount(trancheAmount)}</td>
-              <td className="py-3 text-[13px] text-gray-400 text-right">{deadlineStr}</td>
-              <td className="py-3 text-right"><StatusDot status={statusLabel} /></td>
-              <td className="py-3 text-right">
-                {status === "Verified" && isConnected && (
-                  <ReleaseTrancheButton grantId={grantId} milestoneId={BigInt(i)} />
-                )}
-              </td>
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
+  const validMilestones = ghMilestones.filter((m) => m.releasePercent !== null)
+  const totalBps = validMilestones.reduce((sum, m) => sum + (m.releasePercent ?? 0) * 100, 0)
+  const bpsValid = totalBps === 10000
+
+  const handleCreate = async () => {
+    if (!grantee || !ledgerApprover || !totalUsdc) return
+    const amount = parseUnits(totalUsdc, 6)
+
+    try {
+      // Step 1: approve USDC
+      setStep("approving")
+      await writeContractAsync({
+        address: USDC_ADDRESS as `0x${string}`,
+        abi: ERC20_APPROVE_ABI,
+        functionName: "approve",
+        args: [addresses.grant as `0x${string}`, amount],
+      })
+
+      // Step 2: create grant
+      setStep("creating")
+      await writeContractAsync({
+        address: addresses.grant as `0x${string}`,
+        abi: grantAbi,
+        functionName: "createGrant",
+        args: [
+          grantee as `0x${string}`,
+          USDC_ADDRESS as `0x${string}`,
+          amount,
+          ledgerApprover as `0x${string}`,
+          validMilestones.map((m) => m.title),
+          validMilestones.map((m) => BigInt(Math.round((m.releasePercent ?? 0) * 100))),
+          validMilestones.map(() => 0n),
+        ],
+      })
+      setStep("idle")
+    } catch (err) {
+      console.error("Create grant failed:", err)
+      setStep("idle")
+    }
+  }
+
+  if (!isConnected) return null
+
+  return (
+    <div className="border border-gray-100 rounded-md p-4 space-y-4">
+      <p className="text-[11px] text-gray-400 uppercase tracking-wider">Create grant on-chain</p>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-[11px] text-gray-400 mb-1 block">Grantee wallet</label>
+          <input
+            value={grantee}
+            onChange={(e) => setGrantee(e.target.value)}
+            placeholder="0x..."
+            className="w-full border border-gray-100 px-3 py-2 text-[12px] rounded-md focus:border-accent focus:outline-none font-mono"
+          />
+        </div>
+        <div>
+          <label className="text-[11px] text-gray-400 mb-1 block">Ledger approver</label>
+          <input
+            value={ledgerApprover}
+            onChange={(e) => setLedgerApprover(e.target.value)}
+            placeholder="0x..."
+            className="w-full border border-gray-100 px-3 py-2 text-[12px] rounded-md focus:border-accent focus:outline-none font-mono"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-end gap-3">
+        <div>
+          <label className="text-[11px] text-gray-400 mb-1 block">Total USDC</label>
+          <input
+            value={totalUsdc}
+            onChange={(e) => setTotalUsdc(e.target.value)}
+            placeholder="1000"
+            className="border border-gray-100 px-3 py-2 text-[12px] rounded-md focus:border-accent focus:outline-none w-32 font-mono"
+          />
+        </div>
+        <div className="flex-1">
+          <p className="text-[11px] text-gray-400 mb-1">
+            Milestones from GitHub issues ({validMilestones.length} with release %)
+            {!bpsValid && validMilestones.length > 0 && (
+              <span className="text-amber ml-1">— total {(totalBps / 100).toFixed(0)}% (must be 100%)</span>
+            )}
+          </p>
+          <div className="space-y-1">
+            {validMilestones.map((m) => (
+              <div key={m.issueNumber} className="flex items-center gap-2 text-[11px] text-gray-500">
+                <span className="text-gray-300">#{m.issueNumber}</span>
+                <span className="truncate">{m.title}</span>
+                <span className="ml-auto font-mono shrink-0">{m.releasePercent}%</span>
+              </div>
+            ))}
+            {validMilestones.length === 0 && (
+              <p className="text-[11px] text-gray-300">No issues with release % found</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={handleCreate}
+        disabled={step !== "idle" || !grantee || !ledgerApprover || !totalUsdc || !bpsValid || validMilestones.length === 0}
+        className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 disabled:opacity-40 transition-colors"
+      >
+        {step === "approving" ? "Approving USDC..." : step === "creating" ? "Creating grant..." : "Create grant"}
+      </button>
+    </div>
   )
 }
 
-function DemoGrantView() {
+function MilestoneTable({
+  ghMilestones,
+  chainMilestones,
+  totalAmount,
+  grantId,
+  isConnected,
+}: {
+  ghMilestones: Milestone[]
+  chainMilestones: any[]
+  totalAmount: bigint
+  grantId: bigint | null
+  isConnected: boolean
+}) {
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="text-[18px] font-semibold text-black">Flint Protocol Grant</h2>
-          <p className="text-[13px] text-gray-400 mt-1">
-            Grantee: <span className="font-mono">0x225F...6aF7</span> · 1,000 USDC
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div className="border border-gray-100 rounded-md px-4 py-3">
-          <p className="text-[11px] text-gray-400 uppercase tracking-wider">Total amount</p>
-          <p className="text-[18px] text-black font-medium mt-1">1,000 USDC</p>
-        </div>
-        <div className="border border-gray-100 rounded-md px-4 py-3">
-          <p className="text-[11px] text-gray-400 uppercase tracking-wider">Milestones</p>
-          <p className="text-[18px] text-black font-medium mt-1">4</p>
-        </div>
-        <div className="border border-gray-100 rounded-md px-4 py-3">
-          <p className="text-[11px] text-gray-400 uppercase tracking-wider">Released</p>
-          <p className="text-[18px] text-black font-medium mt-1">300 USDC</p>
-        </div>
-      </div>
-
-      <table className="w-full">
-        <thead>
-          <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100">
-            <th className="text-left py-3 font-normal w-10">#</th>
-            <th className="text-left py-3 font-normal">Description</th>
-            <th className="text-right py-3 font-normal">Tranche</th>
-            <th className="text-right py-3 font-normal">Deadline</th>
-            <th className="text-right py-3 font-normal">Status</th>
-            <th className="text-right py-3 font-normal w-36"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {DEMO_MILESTONES.map((m, i) => (
-            <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-              <td className="py-3 text-[13px] text-gray-400 font-mono">{String(i + 1).padStart(2, "0")}</td>
-              <td className="py-3 text-[13px] text-gray-700">{m.desc}</td>
-              <td className="py-3 text-[13px] font-mono text-gray-700 text-right">{m.tranche}</td>
-              <td className="py-3 text-[13px] text-gray-400 text-right">{m.deadline}</td>
-              <td className="py-3 text-right"><StatusDot status={m.status} /></td>
-              <td className="py-3 text-right">
-                {m.status === "Verified" && (
-                  <button className="px-3 py-1.5 text-[12px] font-medium text-white bg-accent rounded-md opacity-50 cursor-not-allowed">
-                    Approve tranche
-                  </button>
-                )}
-              </td>
+    <div>
+      <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">Milestones</p>
+      <div className="border border-gray-100 rounded-md overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+              <th className="text-left px-4 py-3 font-normal">#</th>
+              <th className="text-left px-4 py-3 font-normal">Milestone</th>
+              <th className="text-right px-4 py-3 font-normal">Release</th>
+              <th className="text-right px-4 py-3 font-normal">Amount</th>
+              <th className="text-right px-4 py-3 font-normal">Linked PRs</th>
+              <th className="text-right px-4 py-3 font-normal">Status</th>
+              <th className="text-right px-4 py-3 font-normal"></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {ghMilestones.map((m, i) => {
+              const chainM = chainMilestones[i]
+              const chainStatus = chainM
+                ? MILESTONE_STATUS[Number(chainM.status ?? chainM[3])]
+                : null
+              const trancheBps = chainM ? Number(chainM.trancheBps ?? chainM[1]) : null
+              const trancheAmount = trancheBps && totalAmount > 0n
+                ? (totalAmount * BigInt(trancheBps)) / 10000n
+                : null
 
-      <p className="text-[11px] text-gray-400 text-center pt-2">
-        Demo data — connect wallet and load a real grant ID to interact
-      </p>
+              const releaseDisplay = m.releasePercent !== null
+                ? `${m.releasePercent}%`
+                : m.releaseAmount !== null
+                  ? `${m.releaseAmount} USDC`
+                  : "—"
+
+              const amountDisplay = trancheAmount
+                ? formatAmount(trancheAmount)
+                : m.releaseAmount !== null
+                  ? `${m.releaseAmount} USDC`
+                  : "—"
+
+              const displayStatus = chainStatus
+                ? (chainStatus === "AutoReleased" ? "Auto-released" : chainStatus)
+                : m.status
+
+              return (
+                <tr key={m.issueNumber} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3 text-[12px] text-gray-400 font-mono">
+                    {String(i + 1).padStart(2, "0")}
+                  </td>
+                  <td className="px-4 py-3">
+                    <a
+                      href={m.issueUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[13px] text-gray-700 hover:text-accent"
+                    >
+                      {m.title}
+                    </a>
+                    <span className="text-[11px] text-gray-400 ml-2">#{m.issueNumber}</span>
+                  </td>
+                  <td className="px-4 py-3 text-[13px] text-gray-700 text-right font-mono">
+                    {releaseDisplay}
+                  </td>
+                  <td className="px-4 py-3 text-[13px] text-gray-700 text-right font-mono">
+                    {amountDisplay}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {m.linkedPRs.length > 0
+                      ? <span className="text-[12px] text-gray-500">{m.linkedPRs.map((n) => `#${n}`).join(", ")}</span>
+                      : <span className="text-[11px] text-gray-300">none</span>
+                    }
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <StatusDot status={displayStatus} size="sm" />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {chainStatus === "Verified" && isConnected && grantId !== null && (
+                      <ReleaseTrancheButton grantId={grantId} milestoneId={BigInt(i)} />
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
@@ -322,15 +484,14 @@ function ReleaseTrancheButton({ grantId, milestoneId }: { grantId: bigint; miles
       }}
       disabled={waiting}
       className={`px-3 py-1.5 text-[12px] font-medium text-white bg-accent rounded-md transition-colors ${
-        waiting ? "ledger-pulse border border-accent opacity-75" : "hover:bg-accent/90"
+        waiting ? "opacity-75" : "hover:bg-accent/90"
       }`}
     >
-      {waiting ? "Waiting for Ledger..." : "Approve tranche"}
+      {waiting ? "Waiting..." : "Approve tranche"}
     </button>
   )
 }
 
 function formatAmount(amount: bigint): string {
-  const whole = Number(amount) / 1e6
-  return `${whole.toLocaleString()} USDC`
+  return `${(Number(amount) / 1e6).toLocaleString()} USDC`
 }
