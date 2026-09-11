@@ -3,11 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useAccount, useConnect, useDisconnect } from "wagmi"
-import { injected } from "wagmi/connectors"
 import { useSession, signOut } from "next-auth/react"
-import { truncateAddress } from "@/lib/utils"
-import { useGitHubStore } from "@/lib/github-store"
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
@@ -16,11 +12,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { address, isConnected } = useAccount()
-  const { connect } = useConnect()
-  const { disconnect } = useDisconnect()
   const { data: session } = useSession()
-  const { repo } = useGitHubStore()
 
   return (
     <aside className="w-[240px] shrink-0 border-r border-gray-100 flex flex-col h-screen sticky top-0">
@@ -82,42 +74,15 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Auth & Wallet */}
+      {/* Auth */}
       <div className="mt-auto p-3 border-t border-gray-100 space-y-2">
         {session ? (
-          <>
-            {/* Wallet */}
-            <div className="bg-gray-50 rounded-md px-3 py-3 space-y-2">
-              {isConnected && address ? (
-                <>
-                  <p className="font-mono text-gray-700 text-[11px]">
-                    {truncateAddress(address)}
-                  </p>
-                  <button
-                    onClick={() => disconnect()}
-                    className="w-full px-2 py-1.5 text-[11px] font-medium text-gray-700 border border-gray-100 rounded hover:border-gray-400 transition-colors"
-                  >
-                    Disconnect wallet
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => connect({ connector: injected() })}
-                  className="w-full px-3 py-2 text-[12px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
-                >
-                  Connect wallet
-                </button>
-              )}
-            </div>
-
-            {/* Sign out */}
-            <button
-              onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
-              className="w-full px-3 py-2 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
-            >
-              Sign out
-            </button>
-          </>
+          <button
+            onClick={() => signOut({ redirect: true, callbackUrl: "/" })}
+            className="w-full px-3 py-2 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+          >
+            Sign out
+          </button>
         ) : null}
       </div>
     </aside>

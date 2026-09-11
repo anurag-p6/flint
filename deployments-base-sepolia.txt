@@ -22,3 +22,5 @@ SqrtPolicy:          0x31BC0cDd16a8972f2A6b04E0f87bFFcF79b051a9
   https://sepolia.basescan.org/address/0x31BC0cDd16a8972f2A6b04E0f87bFFcF79b051a9
 MockUSDC:            0x33040f3D47f7Fbfc395cF5126953D913156De70B
   https://sepolia.basescan.org/address/0x33040f3D47f7Fbfc395cF5126953D913156De70B
+FlintScorerReceiver: 0x1080d7a1b7DFE2b3C2B1DD600AdbC9B651e88eFD
+  https://sepolia.basescan.org/address/0x1080d7a1b7DFE2b3C2B1DD600AdbC9B651e88eFD

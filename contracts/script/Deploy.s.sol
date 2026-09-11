@@ -15,6 +15,7 @@ import {FlintScorerReceiver} from "../src/core/FlintScorerReceiver.sol";
 /// @notice Deploys all Flint protocol contracts
 contract Deploy is Script {
     address constant USDC_BASE_SEPOLIA = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
+    address constant USDC_ARC_TESTNET = 0x3600000000000000000000000000000000000000;
 
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
@@ -88,5 +89,6 @@ contract Deploy is Script {
         console.log("ProportionalPolicy:  ", address(proportional));
         console.log("SqrtPolicy:          ", address(sqrt));
         console.log("USDC (Base Sepolia): ", USDC_BASE_SEPOLIA);
+        console.log("USDC (Arc Testnet):  ", USDC_ARC_TESTNET);
     }
 }
