@@ -1,13 +1,24 @@
 "use client"
 
-import { useReadContract, useWriteContract, useAccount } from "wagmi"
+import { useReadContract } from "wagmi"
 import { keccak256, encodePacked } from "viem"
 import { useState, useEffect } from "react"
+import dynamic from "next/dynamic"
 import { addresses } from "@/lib/contracts"
 import { truncateAddress, formatScore } from "@/lib/utils"
 import { useGitHubStore } from "@/lib/github-store"
 import { RepoSwitcher } from "@/components/repo-switcher"
 import escrowAbi from "@/lib/abi/FlintEscrow.json"
+
+// Ledger USB touches WebHID: client-only, never SSR.
+const LedgerConnectRow = dynamic(
+  () => import("@/components/ledger-panel").then((m) => m.LedgerConnectRow),
+  { ssr: false },
+)
+const LedgerApprovePanel = dynamic(
+  () => import("@/components/ledger-panel").then((m) => m.LedgerApprovePanel),
+  { ssr: false },
+)
 
 type PoolStatus = "Active" | "ScoresSubmitted" | "Approved" | "Paid" | "Reclaimed"
 const STATUS_LABELS: PoolStatus[] = ["Active", "ScoresSubmitted", "Approved", "Paid", "Reclaimed"]
@@ -46,7 +57,6 @@ function MetricCard({ label, value, mono = false }: { label: string; value: stri
 }
 
 export default function DashboardPage() {
-  const { isConnected } = useAccount()
   const { repo: connectedRepo } = useGitHubStore()
 
   // GitHub contributor data
@@ -102,6 +112,9 @@ export default function DashboardPage() {
   const status = hasPool ? STATUS_LABELS[Number(pool[7])] : null
   const totalAmount = hasPool ? BigInt(pool[2]) : 0n
   const totalScoreSum = onChainScores.reduce((sum: bigint, s: any) => sum + BigInt(s.score), 0n)
+  const walletToLogin: Record<string, string> = Object.fromEntries(
+    Object.entries(walletMapping).map(([login, wallet]) => [(wallet as string).toLowerCase(), login]),
+  )
 
   return (
     <div className="space-y-8">
@@ -122,6 +135,9 @@ export default function DashboardPage() {
           </a>
         )}
       </div>
+
+      {/* Ledger connection (USB direct or wallet app) */}
+      <LedgerConnectRow />
 
       {/* No repo selected */}
       {!connectedRepo && (
@@ -162,9 +178,6 @@ export default function DashboardPage() {
                   <span className="text-[13px] text-gray-400">Pool: {formatPoolAmount(totalAmount)}</span>
                   <StatusDot status={status === "ScoresSubmitted" ? "Scores submitted" : status!} />
                 </div>
-                {status === "ScoresSubmitted" && isConnected && (
-                  <ApprovePayoutButton repoId={repoId!} />
-                )}
               </div>
               <div className="grid grid-cols-4 gap-4">
                 <MetricCard label="Contributors" value={ghContributors.length.toString()} />
@@ -172,6 +185,19 @@ export default function DashboardPage() {
                 <MetricCard label="Status" value={status === "ScoresSubmitted" ? "Scores submitted" : status!} />
                 <MetricCard label="Scored" value={onChainScores.length > 0 ? `${onChainScores.length} addresses` : "Pending"} />
               </div>
+              {status === "ScoresSubmitted" && (
+                <LedgerApprovePanel
+                  repoId={repoId!}
+                  ledgerSigner={pool[4] as string}
+                  payoutPolicy={pool[3] as string}
+                  totalAmount={totalAmount}
+                  scores={onChainScores.map((s: any) => ({
+                    contributor: s.contributor as string,
+                    score: BigInt(s.score),
+                  }))}
+                  usernameFor={(w: string) => walletToLogin[w.toLowerCase()]}
+                />
+              )}
             </div>
           )}
 
@@ -319,33 +345,6 @@ function ContributorsTable({
         </p>
       )}
     </div>
-  )
-}
-
-function ApprovePayoutButton({ repoId }: { repoId: `0x${string}` }) {
-  const [waiting, setWaiting] = useState(false)
-  const { writeContract } = useWriteContract()
-
-  return (
-    <button
-      onClick={() => {
-        setWaiting(true)
-        try {
-          writeContract({
-            address: addresses.escrow as `0x${string}`,
-            abi: escrowAbi,
-            functionName: "approveAndPayout",
-            args: [repoId, "0x"],
-          })
-        } catch { setWaiting(false) }
-      }}
-      disabled={waiting}
-      className={`px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md transition-colors ${
-        waiting ? "opacity-75" : "hover:bg-accent/90"
-      }`}
-    >
-      {waiting ? "Waiting for Ledger..." : "Approve payout"}
-    </button>
   )
 }
 
