@@ -4,8 +4,7 @@ import { SessionProvider } from "next-auth/react"
 import { WagmiProvider } from "wagmi"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { PrivyProvider } from "@privy-io/react-auth"
-import { baseSepolia } from "viem/chains"
-import { config } from "@/lib/wagmi"
+import { config, arcTestnet } from "@/lib/wagmi"
 import { PRIVY_APP_ID, privyEnabled } from "@/lib/privy/config"
 import { useState, type ReactNode } from "react"
 
@@ -31,8 +30,8 @@ export function Providers({ children }: { children: ReactNode }) {
             embeddedWallets: {
               ethereum: { createOnLogin: "users-without-wallets" },
             },
-            defaultChain: baseSepolia,
-            supportedChains: [baseSepolia],
+            defaultChain: arcTestnet,
+            supportedChains: [arcTestnet],
           }}
         >
           {app}

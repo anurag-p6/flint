@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { NextResponse } from "next/server"
+import { parseIssueSpec } from "@/lib/issue-spec"
 
 export interface Milestone {
   issueNumber: number
@@ -13,26 +14,10 @@ export interface Milestone {
   issueUrl: string
   closedAt: string | null
   createdAt: string
-}
-
-function parseReleasePercent(body: string): number | null {
-  const match = body.match(/release\s*:\s*(\d+(?:\.\d+)?)\s*%/i)
-  return match ? parseFloat(match[1]) : null
-}
-
-function parseReleaseAmount(body: string): number | null {
-  const match = body.match(/amount\s*:\s*(\d+(?:\.\d+)?)/i)
-  return match ? parseFloat(match[1]) : null
-}
-
-function parseLinkedPRs(body: string): number[] {
-  // Matches "closes #123", "fixes #456", "resolves #789", or plain "#123"
-  const matches = body.matchAll(/(?:closes?|fixes?|resolves?)?\s*#(\d+)/gi)
-  const prs: number[] = []
-  for (const m of matches) {
-    prs.push(parseInt(m[1]))
-  }
-  return [...new Set(prs)]
+  subMilestones?: { title: string; releaseBps: number | null }[]
+  grantee?: string | null
+  deadline?: string | null
+  specErrors?: string[]
 }
 
 export async function GET(request: Request) {
@@ -72,17 +57,28 @@ export async function GET(request: Request) {
       .filter((i) => !i.pull_request)
       .map((i) => {
         const body = i.body ?? ""
+        const spec = parseIssueSpec(body)
+        const legacyRelease = body.match(/release\s*:\s*(\d+(?:\.\d+)?)\s*%/i)
+        const legacyAmount = body.match(/amount\s*:\s*(\d+(?:\.\d+)?)/i)
         return {
           issueNumber: i.number,
           title: i.title,
           body,
           status: i.state as "open" | "closed",
-          releasePercent: parseReleasePercent(body),
-          releaseAmount: parseReleaseAmount(body),
-          linkedPRs: parseLinkedPRs(body),
+          releasePercent: spec.milestones.length > 1
+            ? spec.milestones.reduce((a, m) => a + (m.releaseBps ?? 0), 0) / 100
+            : legacyRelease ? parseFloat(legacyRelease[1]) : null,
+          releaseAmount: spec.amount ?? (legacyAmount ? parseFloat(legacyAmount[1]) : null),
+          linkedPRs: spec.milestones.flatMap((m) => m.linkedPRs).filter((v, idx, a) => a.indexOf(v) === idx),
           issueUrl: i.html_url,
           closedAt: i.closed_at ?? null,
           createdAt: i.created_at,
+          subMilestones: spec.milestones.length > 1
+            ? spec.milestones.map((m) => ({ title: m.title, releaseBps: m.releaseBps }))
+            : undefined,
+          grantee: spec.grantee,
+          deadline: spec.deadline,
+          specErrors: spec.errors,
         }
       })
 

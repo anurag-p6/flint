@@ -1,20 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { useWallets } from "@privy-io/react-auth";
-import { useReadContract } from "wagmi";
+import {
+  useAccount,
+  useReadContract,
+  useSwitchChain,
+  useWalletClient,
+  useWriteContract,
+} from "wagmi";
 import { recoverMessageAddress, type Hex } from "viem";
 import { addresses, CHAIN_ID } from "@/lib/contracts";
 import { formatUSDC } from "@/lib/format";
 import { truncateAddress } from "@/lib/utils";
 import { calculatePayoutPreview } from "@/lib/payout";
-import {
-  encodeApproveAndPayout,
-  privyPersonalSign,
-  privySendTransaction,
-  ESCROW_ADDRESS,
-  type PrivyEip1193Provider,
-} from "@/lib/privy/tokens";
+import { encodeApproveAndPayout, ESCROW_ADDRESS } from "@/lib/tx";
 import escrowAbi from "@/lib/abi/FlintEscrow.json";
 
 export interface ApproveScore {
@@ -30,10 +29,9 @@ type ApprovePhase =
   | "success"
   | "error";
 
-/// Maintainer approval via Privy embedded wallet: decoded payout summary,
-/// one-click sign of the approval hash, silent on-chain-shaped verification,
-/// then the payout transaction — no checkbox, no friction.
-export function PrivyApprovePanel({
+/// Maintainer approval via connected browser wallet: decoded payout summary,
+/// one-click sign of the approval hash, local verification, then payout tx.
+export function ApprovePanel({
   repoId,
   signer,
   payoutPolicy,
@@ -52,12 +50,10 @@ export function PrivyApprovePanel({
   const [error, setError] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<Hex | null>(null);
 
-  const { wallets } = useWallets();
-  // Embedded email wallet first, otherwise any connected external wallet
-  // (e.g. MetaMask — funds stay where they are).
-  const active =
-    wallets.find((w) => w.walletClientType === "privy" || w.walletClientType === "privy-v2") ??
-    wallets[0];
+  const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const { switchChainAsync } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
 
   const { data: approvalHash } = useReadContract({
     address: addresses.escrow as Hex,
@@ -76,9 +72,8 @@ export function PrivyApprovePanel({
     .map((s, i) => ({ ...s, payout: payouts[i] ?? 0n }))
     .filter((r) => r.payout > 0n);
 
-  const signingAddress = active?.address;
   const signerMatches =
-    !!signingAddress && signingAddress.toLowerCase() === signer.toLowerCase();
+    !!address && address.toLowerCase() === signer.toLowerCase();
   const hashReady = !!approvalHash;
 
   const fail = (message: string) => {
@@ -91,27 +86,25 @@ export function PrivyApprovePanel({
     setTxHash(null);
     try {
       if (!hashReady) throw new Error("Approval hash not loaded yet");
-      if (!active) {
+      if (!walletClient || !address) {
         throw new Error("Connect a wallet first (top right)");
       }
       const hash = approvalHash as Hex;
-      const from = active.address as Hex;
-      // External wallets (MetaMask) may sit on the wrong chain: nudge first,
-      // then verify — the approval hash is chain-bound, so this check is load-bearing.
-      try {
-        await active.switchChain(CHAIN_ID);
-      } catch {
-        // User may have dismissed the switch prompt; the check below still guards us.
+      if (walletClient.chain.id !== CHAIN_ID) {
+        try {
+          await switchChainAsync({ chainId: CHAIN_ID });
+        } catch {
+          // User may have dismissed the switch prompt; the check below still guards us.
+        }
       }
-      const provider = (await active.getEthereumProvider()) as unknown as PrivyEip1193Provider;
-      const chainHex = (await provider.request({ method: "eth_chainId" })) as string;
-      if (Number(chainHex) !== CHAIN_ID) {
+      const chainId = await walletClient.getChainId();
+      if (chainId !== CHAIN_ID) {
         throw new Error("Switch your wallet to Arc Testnet and retry");
       }
 
-      // 1. One-click approval signature (embedded wallet confirms).
+      // 1. One-click approval signature (wallet confirms).
       setPhase("signing");
-      const signature = await privyPersonalSign(provider, from, hash);
+      const signature = await walletClient.signMessage({ message: { raw: hash } });
 
       // 2. Silent verification — invisible unless something is wrong.
       setPhase("verifying");
@@ -125,12 +118,13 @@ export function PrivyApprovePanel({
         );
       }
 
-      // 3. Submit the payout from the same embedded wallet.
+      // 3. Submit the payout from the same wallet.
       setPhase("submitting");
-      const tx = await privySendTransaction(provider, {
-        from,
-        to: ESCROW_ADDRESS,
-        data: encodeApproveAndPayout(repoId, signature),
+      const tx = await writeContractAsync({
+        address: ESCROW_ADDRESS,
+        abi: escrowAbi,
+        functionName: "approveAndPayout",
+        args: [repoId, signature],
       });
       setTxHash(tx);
       setPhase("success");
@@ -173,7 +167,7 @@ export function PrivyApprovePanel({
         </p>
       </div>
 
-      {!active ? (
+      {!address ? (
         <p className="text-[12px] text-gray-400">
           Connect your wallet (top right) to unlock approval.
         </p>
@@ -185,7 +179,7 @@ export function PrivyApprovePanel({
       ) : (
         <p className="flex items-center gap-1.5 text-[12px] text-amber">
           <span className="w-1.5 h-1.5 rounded-full bg-amber" />
-          {truncateAddress(signingAddress ?? "")} is not the registered approver (
+          {truncateAddress(address ?? "")} is not the registered approver (
           {truncateAddress(signer)}). Connect the maintainer wallet.
         </p>
       )}

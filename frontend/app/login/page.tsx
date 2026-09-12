@@ -1,20 +1,18 @@
 "use client"
 
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 
 export default function LoginPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleGitHubSignIn = async () => {
     setIsLoading(true)
-    const result = await signIn("github", { redirect: false })
-    if (result?.ok) {
-      router.push("/dashboard")
-    }
+    // Default full-page redirect: browser goes to GitHub, returns to
+    // NEXTAUTH_URL (/api/auth/callback/github), then lands on /dashboard.
+    // (redirect:false swallows the navigation — nothing opens.)
+    await signIn("github", { callbackUrl: "/dashboard" })
     setIsLoading(false)
   }
 
@@ -24,11 +22,10 @@ export default function LoginPage() {
         <div className="flex flex-col items-center gap-8">
           <div className="flex items-center gap-2">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="Flint"
-              width={40}
-              height={40}
-              className="rounded-md"
+              width={52}
+              height={52}
             />
             <h1 className="text-[24px] font-semibold text-black">Flint</h1>
           </div>

@@ -6,22 +6,22 @@ import { useSession, signIn, signOut } from "next-auth/react"
 
 const features = [
   {
-    title: "TEE-attested scoring",
-    desc: "AI agent scores contributions inside a Chainlink CRE enclave. API keys and raw data never leave.",
+    title: "Agent-verified work",
+    desc: "A keeper agent verifies merged PRs and milestones on every run. A Chainlink CRE confidential workflow scores contributions with API keys sealed inside a TEE.",
   },
   {
-    title: "Hardware approval",
-    desc: "Every payout needs a one-click approval from the maintainer's wallet. No funds move without a signature.",
+    title: "Signature-gated payouts",
+    desc: "Every payout needs a one-click approval signature from the maintainer's wallet. No funds move without it.",
   },
   {
     title: "On-chain audit trail",
-    desc: "The Graph indexes every score, payout, and milestone. Fully queryable, permanently verifiable.",
+    desc: "A subgraph indexes every score, payout, and milestone. Fully queryable, permanently verifiable.",
   },
 ]
 
 const stats = [
-  { label: "Contracts deployed", value: "10" },
-  { label: "Chain", value: "Base Sepolia" },
+  { label: "Contracts deployed", value: "9" },
+  { label: "Chain", value: "Arc Testnet" },
   { label: "Scoring model", value: "Gemini Flash" },
   { label: "Token", value: "USDC" },
 ]
@@ -32,8 +32,8 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex items-center justify-between px-8 py-5 border-b border-gray-100">
-        <span className="flex items-center gap-1.5 text-[17px] font-semibold text-black tracking-tight">
-          <Image src="/logo.png" alt="Flint logo" width={32} height={32} priority className="rounded-md" />
+        <span className="flex items-center gap-1 text-[19px] font-semibold text-black tracking-tight">
+          <Image src="/logo.svg" alt="Flint logo" width={38} height={38} priority />
           Flint
         </span>
         <div className="flex items-center gap-3">
@@ -67,7 +67,7 @@ export default function Home() {
               Trustless disbursement for grants<br />and open source contributions
             </h1>
             <p className="text-[15px] text-gray-700 leading-relaxed max-w-lg">
-              Work verified inside a TEE. The maintainer's signature approves every payout. Blockchain records
+              Work verified by agents. The maintainer's signature approves every payout. Blockchain records
               everything. No spreadsheets, no manual transfers, no trust required.
             </p>
 
@@ -121,7 +121,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-gray-100 px-8 py-8 text-center text-[12px] text-gray-400">
-        <p>Built for ETHOnline 2026 • Chainlink CRE • Privy • The Graph</p>
+        <p>Built for ETHOnline 2026 • Arc • Chainlink CRE • The Graph</p>
       </footer>
     </div>
   )

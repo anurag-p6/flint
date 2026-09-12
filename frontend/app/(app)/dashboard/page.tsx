@@ -1,12 +1,13 @@
 "use client"
 
-import { useReadContract } from "wagmi"
+import { useAccount, useReadContract } from "wagmi"
 import { keccak256, encodePacked } from "viem"
 import { useState, useEffect } from "react"
 import { addresses } from "@/lib/contracts"
 import { truncateAddress, formatScore } from "@/lib/utils"
 import { useGitHubStore } from "@/lib/github-store"
 import { RepoSwitcher } from "@/components/repo-switcher"
+import { ApprovePanel } from "@/components/approve-panel"
 import { PrivyWalletButton } from "@/components/privy-auth"
 import { PrivyApprovePanel } from "@/components/privy-approve-panel"
 import { privyEnabled } from "@/lib/privy/config"
@@ -50,6 +51,7 @@ function MetricCard({ label, value, mono = false }: { label: string; value: stri
 
 export default function DashboardPage() {
   const { repo: connectedRepo } = useGitHubStore()
+  const { isConnected } = useAccount()
 
   // GitHub contributor data
   const [ghContributors, setGhContributors] = useState<GitHubContributor[]>([])
@@ -190,9 +192,21 @@ export default function DashboardPage() {
                     }))}
                     usernameFor={(w: string) => walletToLogin[w.toLowerCase()]}
                   />
+                ) : isConnected ? (
+                  <ApprovePanel
+                    repoId={repoId!}
+                    signer={pool[4] as string}
+                    payoutPolicy={pool[3] as string}
+                    totalAmount={totalAmount}
+                    scores={onChainScores.map((s: any) => ({
+                      contributor: s.contributor as string,
+                      score: BigInt(s.score),
+                    }))}
+                    usernameFor={(w: string) => walletToLogin[w.toLowerCase()]}
+                  />
                 ) : (
                   <p className="text-[12px] text-amber">
-                    Set NEXT_PUBLIC_PRIVY_APP_ID in .env to enable one-click payout approval.
+                    Connect a wallet to enable one-click payout approval.
                   </p>
                 ))}
             </div>

@@ -1,0 +1,15 @@
+{
+  "name": "flint-subgraph",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Flint reputation + audit-trail subgraph on Arc Testnet (The Graph)",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy flint --node https://api.studio.thegraph.com/deploy/"
+  },
+  "devDependencies": {
+    "@graphprotocol/graph-cli": "latest",
+    "@graphprotocol/graph-ts": "latest"
+  }
+}
