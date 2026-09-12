@@ -1,0 +1,102 @@
+# Flint reputation + audit trail.
+# Contributor aggregates accumulate ONLY from ReceiptMinted (PayoutExecuted is
+# stored as history but never summed) so totals can never double-count.
+
+type Contributor @entity(immutable: false) {
+  id: ID! # wallet address hex
+  totalScore: BigInt!
+  totalEarned: BigInt!
+  receiptCount: Int!
+  programsCompleted: Int! # distinct repos with receipts (grant hashes excluded)
+  grantsCompleted: Int!
+  firstSeenAt: BigInt!
+  lastActiveAt: BigInt!
+  receipts: [Receipt!]! @derivedFrom(field: "contributor")
+  payouts: [Payout!]! @derivedFrom(field: "contributor")
+  tranches: [Tranche!]! @derivedFrom(field: "grantee")
+}
+
+type Repository @entity(immutable: false) {
+  id: ID! # repoId hex (only real pools — grant receipt hashes never link here)
+  maintainer: Bytes
+  mode: String
+  cycle: BigInt
+  status: String # Active | Approved | Paid | Reclaimed
+  totalPaid: BigInt!
+  contributorCount: Int!
+  receiptCount: Int!
+  receipts: [Receipt!]! @derivedFrom(field: "repository")
+  memberships: [RepoMembership!]! @derivedFrom(field: "repository")
+}
+
+type RepoMembership @entity(immutable: true) {
+  id: ID! # repoId-contributor
+  repository: Repository!
+  contributor: Contributor!
+}
+
+type Receipt @entity(immutable: true) {
+  id: ID! # tokenId
+  tokenId: BigInt!
+  contributor: Contributor!
+  repository: Repository # null for grant receipts (repoId is keccak("grant", grantId))
+  repoId: Bytes!
+  cycle: BigInt! # pool cycle, or milestoneId for grants
+  score: BigInt! # pool score, or trancheBps for grants
+  amount: BigInt!
+  mode: String! # program | open | grant
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type Payout @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  repository: Repository!
+  contributor: Contributor!
+  cycle: BigInt!
+  amount: BigInt!
+  timestamp: BigInt!
+}
+
+type Pool @entity(immutable: false) {
+  id: ID! # repoId hex
+  maintainer: Bytes!
+  token: Bytes!
+  totalAmount: BigInt!
+  mode: String!
+  cycle: BigInt!
+  status: String! # Active | Approved | Paid | Reclaimed
+}
+
+type Grant @entity(immutable: false) {
+  id: ID! # grantId
+  grantor: Bytes!
+  grantee: Contributor!
+  token: Bytes!
+  totalAmount: BigInt!
+  milestoneCount: Int!
+  amountPaid: BigInt!
+  reclaimed: BigInt!
+  completed: Boolean!
+  milestones: [Milestone!]! @derivedFrom(field: "grant")
+}
+
+type Milestone @entity(immutable: false) {
+  id: ID! # grantId-milestoneId
+  grant: Grant!
+  milestoneId: BigInt!
+  verified: Boolean!
+  verifiedAt: BigInt!
+  releasedAmount: BigInt!
+  autoReleased: Boolean!
+}
+
+type Tranche @entity(immutable: true) {
+  id: ID! # txHash-logIndex
+  grant: Grant!
+  milestoneId: BigInt!
+  grantee: Contributor!
+  amount: BigInt!
+  auto: Boolean!
+  timestamp: BigInt!
+}

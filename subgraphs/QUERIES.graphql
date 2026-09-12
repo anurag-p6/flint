@@ -1,0 +1,97 @@
+# Canonical Flint queries — paste into The Graph Studio playground
+# or use as the reference for `frontend/lib/subgraph.ts`.
+# All totals come from ReceiptMinted only (PayoutExecuted is history).
+
+# 1. Reputation — contributor profile / Flint Score card
+query ContributorProfile($id: ID!) {
+  contributor(id: $id) {
+    id
+    totalScore
+    totalEarned
+    receiptCount
+    programsCompleted
+    grantsCompleted
+    firstSeenAt
+    lastActiveAt
+    receipts(orderBy: timestamp, orderDirection: desc, first: 25) {
+      tokenId
+      repoId
+      cycle
+      score
+      amount
+      mode
+      timestamp
+      txHash
+    }
+  }
+}
+
+# 2. Audit trail — escrow pool lifecycle (pool → payouts → receipts)
+query PoolAudit($id: ID!) {
+  pool(id: $id) {
+    id
+    maintainer
+    token
+    totalAmount
+    mode
+    cycle
+    status
+  }
+  repository(id: $id) {
+    id
+    maintainer
+    mode
+    cycle
+    status
+    totalPaid
+    contributorCount
+    receiptCount
+  }
+  payouts(where: { repository: $id }, orderBy: timestamp, orderDirection: asc) {
+    id
+    contributor { id }
+    cycle
+    amount
+    timestamp
+  }
+  receipts(where: { repoId: $id }, orderBy: timestamp, orderDirection: asc) {
+    tokenId
+    contributor { id }
+    cycle
+    score
+    amount
+    mode
+    txHash
+  }
+}
+
+# 3. Audit trail — grant lifecycle (grant → milestones → tranches)
+query GrantAudit($id: ID!) {
+  grant(id: $id) {
+    id
+    grantor
+    grantee { id totalScore totalEarned }
+    token
+    totalAmount
+    milestoneCount
+    amountPaid
+    reclaimed
+    completed
+    milestones(orderBy: milestoneId, orderDirection: asc) {
+      id
+      milestoneId
+      verified
+      verifiedAt
+      releasedAmount
+      autoReleased
+    }
+  }
+  tranches(where: { grant: $id }, orderBy: timestamp, orderDirection: asc) {
+    id
+    milestoneId
+    grantee { id }
+    amount
+    auto
+    timestamp
+  }
+}
