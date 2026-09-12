@@ -106,7 +106,7 @@ export function PrivyApprovePanel({
       const provider = (await active.getEthereumProvider()) as unknown as PrivyEip1193Provider;
       const chainHex = (await provider.request({ method: "eth_chainId" })) as string;
       if (Number(chainHex) !== CHAIN_ID) {
-        throw new Error("Switch your wallet to Base Sepolia and retry");
+        throw new Error("Switch your wallet to Arc Testnet and retry");
       }
 
       // 1. One-click approval signature (embedded wallet confirms).
@@ -203,7 +203,7 @@ export function PrivyApprovePanel({
         <p className="text-[12px] text-gray-700">
           Payout submitted.{" "}
           <a
-            href={`https://sepolia.basescan.org/tx/${txHash}`}
+            href={`https://testnet.arcscan.app/tx/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-accent hover:underline font-mono"

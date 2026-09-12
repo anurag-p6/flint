@@ -8,6 +8,7 @@ import { useSession, signOut } from "next-auth/react"
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/grant", label: "Grants" },
+  { href: "/network", label: "Network" },
 ]
 
 export function Sidebar() {
@@ -56,7 +57,7 @@ export function Sidebar() {
             <span className="text-gray-400">Network</span>
             <span className="flex items-center gap-1 text-gray-700">
               <span className="w-1.5 h-1.5 rounded-full bg-green" />
-              Base Sepolia
+              Arc Testnet
             </span>
           </div>
           <div className="flex items-center justify-between">

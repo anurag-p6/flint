@@ -1,20 +1,18 @@
 "use client"
 
 import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Image from "next/image"
 
 export default function LoginPage() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleGitHubSignIn = async () => {
     setIsLoading(true)
-    const result = await signIn("github", { redirect: false })
-    if (result?.ok) {
-      router.push("/dashboard")
-    }
+    // Default full-page redirect: browser goes to GitHub, returns to
+    // NEXTAUTH_URL (/api/auth/callback/github), then lands on /dashboard.
+    // (redirect:false swallows the navigation — nothing opens.)
+    await signIn("github", { callbackUrl: "/dashboard" })
     setIsLoading(false)
   }
 

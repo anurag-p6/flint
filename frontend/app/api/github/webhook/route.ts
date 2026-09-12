@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/github-webhook";
 import { parseLinkedPRs } from "@/lib/issue-spec";
+import { emitLive, touchesContributorsMd } from "@/lib/live-bus";
 
 /// Fire-and-forget trigger for the keeper verify pass (Block 05).
 /// Never throws — webhook delivery must not depend on keeper availability.
@@ -57,6 +58,16 @@ export async function POST(request: Request) {
       console.log(`Issue #${issue.number} ${action} flint=${hasFlint} repo=${repo}`);
       if (action === "closed" && issue.state_reason !== "not_planned") {
         triggerKeeper({ reason: "issue-closed", repo, issue: issue.number });
+      }
+    }
+
+    if (event === "push") {
+      const ref = typeof body.ref === "string" ? body.ref : "";
+      const touched = touchesContributorsMd(body);
+      console.log(`Push ${ref} contributors_md=${touched} repo=${repo}`);
+      if (touched) {
+        // Live beat 1: clients re-resolve identity for this repo, no reload.
+        emitLive(repo, "identity");
       }
     }
 

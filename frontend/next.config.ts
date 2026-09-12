@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* Trust tunnel origins for dev HMR (cloudflared quick tunnels rotate hosts). */
+  allowedDevOrigins: ["*.trycloudflare.com"],
 };
 
 const headers = async () => {
