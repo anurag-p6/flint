@@ -29,19 +29,24 @@ export async function GET(request: Request) {
     "User-Agent": "Flint",
   };
 
-  const out: Record<number, { merged: boolean; state: string }> = {};
+  const out: Record<number, { merged: boolean; state: string; createdAt: string | null; mergedAt: string | null }> = {};
   await Promise.all(
     prs.map(async (n) => {
       try {
         const r = await fetch(`https://api.github.com/repos/${repo}/pulls/${n}`, { headers });
         if (!r.ok) {
-          out[n] = { merged: false, state: "unknown" };
+          out[n] = { merged: false, state: "unknown", createdAt: null, mergedAt: null };
           return;
         }
         const pr = await r.json();
-        out[n] = { merged: pr.merged === true, state: pr.merged === true ? "merged" : pr.state };
+        out[n] = {
+          merged: pr.merged === true,
+          state: pr.merged === true ? "merged" : pr.state,
+          createdAt: pr.created_at ?? null,
+          mergedAt: pr.merged_at ?? null,
+        };
       } catch {
-        out[n] = { merged: false, state: "unknown" };
+        out[n] = { merged: false, state: "unknown", createdAt: null, mergedAt: null };
       }
     }),
   );

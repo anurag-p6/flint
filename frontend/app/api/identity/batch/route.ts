@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import { parseContributorsMd } from "../../github/contributors-md/route";
+import { parseContributorsMd } from "@/lib/contributor-mapping";
 import { avatarFor } from "@/lib/identity-resolve";
 
 // GET /api/identity/batch?wallets=0x..,0x..&repos=owner/repo,owner2/repo2

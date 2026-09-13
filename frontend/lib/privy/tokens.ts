@@ -50,7 +50,7 @@ export function encodeCreatePool(
 /// Returns the transaction hash.
 export async function privySendTransaction(
   provider: PrivyEip1193Provider,
-  tx: { from: Hex; to: Hex; data: Hex },
+  tx: { from: Hex; to: Hex; data: Hex; gas?: bigint },
 ): Promise<Hex> {
   const hash = await provider.request({
     method: "eth_sendTransaction",
@@ -60,6 +60,7 @@ export async function privySendTransaction(
         to: tx.to,
         data: tx.data,
         chainId: `0x${CHAIN_ID.toString(16)}`,
+        ...(tx.gas != null ? { gas: `0x${tx.gas.toString(16)}` } : {}),
       },
     ],
   });

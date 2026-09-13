@@ -2,6 +2,7 @@
 // Run: node scripts/check-issue-spec.mjs   (.mjs so tsc ignores it;
 // Node 24 strips types from the imported .ts directly.)
 import { parseIssueSpec, parseLinkedPRs, parseDeadline } from "../lib/issue-spec.ts";
+import { DEFAULT_THRESHOLD, thresholdOrDefault, meetsThreshold, describeGate } from "../lib/threshold.ts";
 
 let failures = 0;
 function check(name, cond, extra = "") {
@@ -53,5 +54,24 @@ check("missing release flagged", s5.errors.some((e) => e.includes("missing relea
 check("parseDeadline valid", parseDeadline("2026-10-01") === Date.UTC(2026, 9, 1) / 1000);
 check("parseDeadline bogus", parseDeadline("2026-02-30") === null);
 check("parseLinkedPRs dedupes", JSON.stringify(parseLinkedPRs("closes #5 and #5, see #9")) === "[5,9]");
+
+const placeholder = `## Milestone: A\nrelease: 100%\n<!-- flint\ngrantee: GRANTEE_LOGIN\namount: 10\n-->`;
+check("placeholder grantee ignored", parseIssueSpec(placeholder).grantee === null);
+
+const thr = `## Milestone: A\nrelease: 100%\n<!-- flint\namount: 10\nthreshold: 70\n-->`;
+check("threshold parsed", parseIssueSpec(thr).threshold === 70, JSON.stringify(parseIssueSpec(thr)));
+const thrAbsent = `## Milestone: A\nrelease: 100%\n<!-- flint\namount: 10\n-->`;
+check("threshold absent → null (default applies downstream)", parseIssueSpec(thrAbsent).threshold === null);
+const thrBad = `## Milestone: A\nrelease: 100%\n<!-- flint\namount: 10\nthreshold: 150\n-->`;
+const sb = parseIssueSpec(thrBad);
+check("threshold >100 flagged + nulled", sb.threshold === null && sb.errors.some((e) => e.includes("Invalid threshold")), JSON.stringify(sb.errors));
+
+check("default is 60", DEFAULT_THRESHOLD === 60);
+check("null → default", thresholdOrDefault(null) === 60 && thresholdOrDefault(undefined) === 60);
+check("explicit kept", thresholdOrDefault(70) === 70);
+check("pass at boundary (scaled units)", meetsThreshold(60000000n, 60));
+check("fail below (scaled units)", !meetsThreshold(59999999n, 60));
+check("zero threshold always passes", meetsThreshold(0n, 0));
+check("gate copy", describeGate(42500000n, 60) === "42.5<60", describeGate(42500000n, 60));
 
 process.exit(failures ? 1 : 0);

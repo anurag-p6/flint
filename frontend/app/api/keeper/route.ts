@@ -6,15 +6,19 @@ import {
   decodeEventLog,
   defineChain,
   encodeEventTopics,
+  encodePacked,
   http,
+  keccak256,
   parseAbi,
   toHex,
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { parseLinkedPRs, parseIssueSpec } from "@/lib/issue-spec";
+import { parseIssueSpec, parseLinkedPRs } from "@/lib/issue-spec";
+import { thresholdOrDefault, meetsThreshold, describeGate } from "@/lib/threshold";
 import { addresses } from "@/lib/contracts";
 import grantAbi from "@/lib/abi/FlintGrant.json";
+import escrowAbi from "@/lib/abi/FlintEscrow.json";
 
 const ARCSCAN_TX = "https://testnet.arcscan.app/tx";
 const START_BLOCK = 61595122n; // Arc grant deployment block (see contracts/ARC_DEPLOY.md)
@@ -66,6 +70,48 @@ function authed(request: Request): boolean {
   const a = Buffer.from(header);
   const b = Buffer.from(`Bearer ${secret}`);
   return a.length === b.length && timingSafeEqual(a, b);
+}
+
+async function mergedPrsClosingIssue(
+  pat: string,
+  owner: string,
+  repo: string,
+  issueNo: number,
+): Promise<number[]> {
+  try {
+    const r = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/pulls?state=closed&per_page=30`,
+      {
+        headers: {
+          Authorization: `token ${pat}`,
+          Accept: "application/vnd.github.v3+json",
+          "User-Agent": "Flint",
+        },
+      },
+    );
+    if (!r.ok) return [];
+    const prs = (await r.json()) as { number: number; merged_at: string | null; body: string | null }[];
+    return prs
+      .filter((p) => p.merged_at && parseLinkedPRs(p.body ?? "").includes(issueNo))
+      .map((p) => p.number);
+  } catch {
+    return [];
+  }
+}
+
+function triggerScorer(repo: string) {
+  const appUrl = process.env.APP_URL;
+  const secret = process.env.KEEPER_CRON_SECRET;
+  if (!appUrl || !secret) return;
+  fetch(`${appUrl}/api/scorer/run`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+      "x-flint-scorer": "1",
+    },
+    body: JSON.stringify({ repo }),
+  }).catch((err) => console.error("keeper→scorer failed:", err));
 }
 
 async function prMerged(
@@ -179,6 +225,7 @@ export async function POST(request: Request) {
           const [owner, repo] = tag[1].split("/");
           const issueNo = parseInt(tag[2], 10);
           let prs: number[] = [];
+          let issueBody = "";
           try {
             const ir = await fetch(
               `https://api.github.com/repos/${owner}/${repo}/issues/${issueNo}`,
@@ -194,7 +241,15 @@ export async function POST(request: Request) {
               skipped.push({ grantId: g, milestoneId: m, reason: `issue-fetch-${ir.status}` });
               continue;
             }
-            prs = parseLinkedPRs((await ir.json()).body ?? "");
+            issueBody = ((await ir.json()).body ?? "") as string;
+            const spec = parseIssueSpec(issueBody);
+            // Per-milestone PRs only — a 50% first tranche must not wait on later #N.
+            prs = spec.milestones[m]?.linkedPRs ?? [];
+            // Demo path: first milestone also verifies from a merged PR that
+            // says `closes #<issue>` — no need to edit the issue body.
+            if (prs.length === 0 && m === 0) {
+              prs = await mergedPrsClosingIssue(pat, owner, repo, issueNo);
+            }
           } catch (e) {
             errors.push({ grantId: g, milestoneId: m, error: `issue-fetch: ${e}` });
             continue;
@@ -207,6 +262,39 @@ export async function POST(request: Request) {
           if (!states.every(Boolean)) {
             skipped.push({ grantId: g, milestoneId: m, reason: "prs-not-merged" });
             continue;
+          }
+          // ── Threshold gate: the grantee's ON-CHAIN TEE score must clear the
+          // issue threshold (footer `threshold:`, default 60). The keeper never
+          // scores — it only reads what the TEE submitted to FlintEscrow.
+          // No scores on-chain yet (pre-CRE) → merge-only fallback, logged loud.
+          {
+            const threshold = thresholdOrDefault(parseIssueSpec(issueBody).threshold);
+            const granteeAddr = String(grant.grantee ?? grant[1] ?? "").toLowerCase();
+            let score: bigint | null = null;
+            try {
+              const repoId = keccak256(encodePacked(["string"], [`${owner}/${repo}`]));
+              const poolScores = (await publicClient.readContract({
+                address: addresses.escrow as `0x${string}`,
+                abi: escrowAbi,
+                functionName: "getPoolScores",
+                args: [repoId],
+              })) as any[];
+              const hit = poolScores.find(
+                (s) => String(s.contributor ?? s[0]).toLowerCase() === granteeAddr,
+              );
+              if (hit) score = BigInt(hit.score ?? hit[1]);
+            } catch {
+              // Read failure → same fallback as no scores.
+            }
+            if (score === null) {
+              console.log(`keeper: grant ${g} milestone ${m} has no on-chain TEE score — merge-only fallback`);
+            } else if (!meetsThreshold(score, threshold)) {
+              console.log(`keeper: grant ${g} milestone ${m} below threshold ${describeGate(score, threshold)} — NOT verifying`);
+              skipped.push({ grantId: g, milestoneId: m, reason: `below-threshold:${describeGate(score, threshold)}` });
+              continue;
+            } else {
+              console.log(`keeper: grant ${g} milestone ${m} clears threshold (${(Number(score) / 1e6).toFixed(1)}>=${threshold})`);
+            }
           }
           console.log(`keeper: grant ${g} milestone ${m} verified by merged PRs [${prs}]`);
           if (dryRun) {
@@ -221,6 +309,7 @@ export async function POST(request: Request) {
               args: [BigInt(g), BigInt(m)],
             });
             verified.push({ grantId: g, milestoneId: m, txHash: tx });
+            triggerScorer(`${owner}/${repo}`);
           } catch (e) {
             errors.push({ grantId: g, milestoneId: m, error: `verify: ${e instanceof Error ? e.message : e}` });
           }

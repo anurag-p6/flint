@@ -3,11 +3,14 @@
 import { useState } from "react";
 import { useWallets } from "@privy-io/react-auth";
 import { useReadContract } from "wagmi";
-import { recoverMessageAddress, type Hex } from "viem";
+import { createPublicClient, http, recoverMessageAddress, type Hex } from "viem";
 import { addresses, CHAIN_ID } from "@/lib/contracts";
 import { formatUSDC } from "@/lib/format";
 import { truncateAddress } from "@/lib/utils";
 import { calculatePayoutPreview } from "@/lib/payout";
+import { policyIdFromAddress, policyLabel } from "@/lib/policy";
+import { arcTestnet } from "@/lib/wagmi";
+import { PaymentProgress, type PaymentStage } from "@/components/payment-progress";
 import {
   encodeApproveAndPayout,
   privyPersonalSign,
@@ -27,8 +30,18 @@ type ApprovePhase =
   | "signing"
   | "verifying"
   | "submitting"
+  | "confirming"
   | "success"
   | "error";
+
+function toPaymentStage(phase: ApprovePhase): PaymentStage | null {
+  if (phase === "signing" || phase === "verifying") return "signing";
+  if (phase === "submitting") return "sending";
+  if (phase === "confirming") return "settling";
+  if (phase === "success") return "success";
+  if (phase === "error") return "error";
+  return null;
+}
 
 /// Maintainer approval via Privy embedded wallet: decoded payout summary,
 /// one-click sign of the approval hash, silent on-chain-shaped verification,
@@ -40,6 +53,7 @@ export function PrivyApprovePanel({
   totalAmount,
   scores,
   usernameFor,
+  onPaid,
 }: {
   repoId: Hex;
   signer: string;
@@ -47,6 +61,7 @@ export function PrivyApprovePanel({
   totalAmount: bigint;
   scores: ApproveScore[];
   usernameFor: (wallet: string) => string | undefined;
+  onPaid?: (hash?: string) => void;
 }) {
   const [phase, setPhase] = useState<ApprovePhase>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -66,11 +81,11 @@ export function PrivyApprovePanel({
     args: [repoId],
   });
 
-  const useSqrt = payoutPolicy.toLowerCase() === addresses.sqrtPolicy.toLowerCase();
+  const policy = policyIdFromAddress(payoutPolicy);
   const payouts = calculatePayoutPreview(
     scores.map((s) => s.score),
     totalAmount,
-    useSqrt,
+    policy,
   );
   const rows = scores
     .map((s, i) => ({ ...s, payout: payouts[i] ?? 0n }))
@@ -127,12 +142,25 @@ export function PrivyApprovePanel({
 
       // 3. Submit the payout from the same embedded wallet.
       setPhase("submitting");
+      // One USDC transfer + on-chain SBT mint per payee. Wallet estimate
+      // undershoots this loop and the tx reverts out of gas.
+      const gas = 1_500_000n + BigInt(rows.length) * 800_000n
       const tx = await privySendTransaction(provider, {
         from,
         to: ESCROW_ADDRESS,
         data: encodeApproveAndPayout(repoId, signature),
+        gas,
       });
       setTxHash(tx);
+      setPhase("confirming");
+      const client = createPublicClient({
+        chain: arcTestnet,
+        transport: http("https://rpc.testnet.arc.network"),
+      });
+      const receipt = await client.waitForTransactionReceipt({ hash: tx });
+      if (receipt.status === "reverted") {
+        throw new Error("Payout reverted on-chain");
+      }
       setPhase("success");
     } catch (err) {
       fail(err instanceof Error ? err.message : "Approval failed");
@@ -140,8 +168,13 @@ export function PrivyApprovePanel({
   };
 
   const busy =
-    phase === "signing" || phase === "verifying" || phase === "submitting";
+    phase === "signing" ||
+    phase === "verifying" ||
+    phase === "submitting" ||
+    phase === "confirming";
+  const overlayStage = toPaymentStage(phase);
 
+  const payAllLabel = `Pay all ${rows.length} contributor${rows.length === 1 ? "" : "s"} · ${formatUSDC(totalAmount)} USDC`;
   const phaseLabel =
     phase === "signing"
       ? "Confirm in your wallet…"
@@ -149,7 +182,7 @@ export function PrivyApprovePanel({
         ? "Verifying signature…"
         : phase === "submitting"
           ? "Submitting payout…"
-          : "Approve payout";
+          : payAllLabel;
 
   return (
     <div className="border border-gray-100 rounded-md px-5 py-4 space-y-4">
@@ -169,7 +202,10 @@ export function PrivyApprovePanel({
           ))}
         </div>
         <p className="text-[11px] text-gray-400 font-mono mt-2">
-          Total {formatUSDC(totalAmount)} USDC · {useSqrt ? "Square root" : "Proportional"} policy
+          Total {formatUSDC(totalAmount)} USDC · {policyLabel(policy)} policy
+        </p>
+        <p className="text-[11px] text-gray-400 mt-1">
+          Only CONTRIBUTORS.md wallets are scored and paid — the split stays between them.
         </p>
       </div>
 
@@ -198,19 +234,25 @@ export function PrivyApprovePanel({
         {phaseLabel}
       </button>
 
-      {phase === "error" && error && <p className="text-[12px] text-red">{error}</p>}
-      {phase === "success" && txHash && (
-        <p className="text-[12px] text-gray-700">
-          Payout submitted.{" "}
-          <a
-            href={`https://testnet.arcscan.app/tx/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent hover:underline font-mono"
-          >
-            {truncateAddress(txHash)}
-          </a>
-        </p>
+      {phase === "error" && !overlayStage && error && (
+        <p className="text-[12px] text-red">{error}</p>
+      )}
+
+      {overlayStage && (
+        <PaymentProgress
+          stage={overlayStage}
+          amountLabel={formatUSDC(totalAmount)}
+          payeeCount={rows.length}
+          txHash={txHash}
+          error={error}
+          onDismiss={() => {
+            if (phase === "success") onPaid?.(txHash ?? undefined);
+            else {
+              setPhase("idle");
+              setError(null);
+            }
+          }}
+        />
       )}
     </div>
   );

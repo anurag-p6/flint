@@ -17,7 +17,8 @@ export const metadata: Metadata = {
   title: "Flint",
   description: "Trustless disbursement protocol for grants and open source contributions",
   icons: {
-    icon: [{ url: "/logo2.svg", type: "image/svg+xml", sizes: "any" }],
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml", sizes: "any" }],
+    apple: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
 }
 

@@ -12,7 +12,9 @@ import { recoverMessageAddress, type Hex } from "viem";
 import { addresses, CHAIN_ID } from "@/lib/contracts";
 import { formatUSDC } from "@/lib/format";
 import { truncateAddress } from "@/lib/utils";
+import { TxLink } from "@/components/tx-link";
 import { calculatePayoutPreview } from "@/lib/payout";
+import { policyIdFromAddress, policyLabel } from "@/lib/policy";
 import { encodeApproveAndPayout, ESCROW_ADDRESS } from "@/lib/tx";
 import escrowAbi from "@/lib/abi/FlintEscrow.json";
 
@@ -62,11 +64,11 @@ export function ApprovePanel({
     args: [repoId],
   });
 
-  const useSqrt = payoutPolicy.toLowerCase() === addresses.sqrtPolicy.toLowerCase();
+  const policy = policyIdFromAddress(payoutPolicy);
   const payouts = calculatePayoutPreview(
     scores.map((s) => s.score),
     totalAmount,
-    useSqrt,
+    policy,
   );
   const rows = scores
     .map((s, i) => ({ ...s, payout: payouts[i] ?? 0n }))
@@ -136,6 +138,7 @@ export function ApprovePanel({
   const busy =
     phase === "signing" || phase === "verifying" || phase === "submitting";
 
+  const payAllLabel = `Pay all ${rows.length} contributor${rows.length === 1 ? "" : "s"} · ${formatUSDC(totalAmount)} USDC`;
   const phaseLabel =
     phase === "signing"
       ? "Confirm in your wallet…"
@@ -143,7 +146,7 @@ export function ApprovePanel({
         ? "Verifying signature…"
         : phase === "submitting"
           ? "Submitting payout…"
-          : "Approve payout";
+          : payAllLabel;
 
   return (
     <div className="border border-gray-100 rounded-md px-5 py-4 space-y-4">
@@ -163,13 +166,17 @@ export function ApprovePanel({
           ))}
         </div>
         <p className="text-[11px] text-gray-400 font-mono mt-2">
-          Total {formatUSDC(totalAmount)} USDC · {useSqrt ? "Square root" : "Proportional"} policy
+          Total {formatUSDC(totalAmount)} USDC · {policyLabel(policy)} policy
+        </p>
+        <p className="text-[11px] text-gray-400 mt-1">
+          Only CONTRIBUTORS.md wallets are scored and paid — the split stays between them.
         </p>
       </div>
 
       {!address ? (
-        <p className="text-[12px] text-gray-400">
-          Connect your wallet (top right) to unlock approval.
+        <p className="flex items-center gap-1.5 text-[12px] text-amber">
+          <span className="w-1.5 h-1.5 rounded-full bg-amber shrink-0" />
+          Wallet not connected — connect to sign this payout. No funds move until you do.
         </p>
       ) : signerMatches ? (
         <p className="flex items-center gap-1.5 text-[12px] text-gray-700">
@@ -196,14 +203,7 @@ export function ApprovePanel({
       {phase === "success" && txHash && (
         <p className="text-[12px] text-gray-700">
           Payout submitted.{" "}
-          <a
-            href={`https://testnet.arcscan.app/tx/${txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-accent hover:underline font-mono"
-          >
-            {truncateAddress(txHash)}
-          </a>
+          <TxLink hash={txHash} className="text-accent hover:underline font-mono" />
         </p>
       )}
     </div>

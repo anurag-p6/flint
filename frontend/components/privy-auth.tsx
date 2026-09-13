@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePrivy, useWallets, useConnectWallet } from "@privy-io/react-auth";
+import { useAccount, useDisconnect } from "wagmi";
 import { privyEnabled } from "@/lib/privy/config";
 import { truncateAddress } from "@/lib/utils";
 
@@ -21,11 +22,32 @@ export function PrivyWalletButton() {
   const { ready, authenticated, login, logout } = usePrivy();
   const { wallets } = useWallets();
   const { connectWallet } = useConnectWallet();
+  const { address: wagmiAddress, isConnected: wagmiConnected } = useAccount();
+  const { disconnect: wagmiDisconnect } = useDisconnect();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const active =
+  const activePrivy =
     wallets.find((w) => w.walletClientType === "privy" || w.walletClientType === "privy-v2") ??
     wallets[0];
+
+  // Connected through a non-Privy path (e.g. wagmi dialog): reflect it instead
+  // of showing a stale Connect button.
+  if ((!authenticated || !activePrivy) && wagmiConnected && wagmiAddress) {
+    return (
+      <span className="flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-md">
+        <span className="w-1.5 h-1.5 rounded-full bg-green shrink-0" />
+        <span className="font-mono text-gray-700 text-[12px]">
+          {truncateAddress(wagmiAddress)}
+        </span>
+        <button
+          onClick={() => wagmiDisconnect()}
+          className="text-[11px] text-gray-400 hover:text-red transition-colors"
+        >
+          Disconnect
+        </button>
+      </span>
+    );
+  }
 
   if (!privyEnabled) {
     return (
@@ -43,7 +65,7 @@ export function PrivyWalletButton() {
     );
   }
 
-  if (!authenticated || !active) {
+  if (!authenticated || !activePrivy) {
     return (
       <span className="relative">
         <button
@@ -94,13 +116,16 @@ export function PrivyWalletButton() {
     <span className="flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-md">
       <span className="w-1.5 h-1.5 rounded-full bg-green shrink-0" />
       <span className="font-mono text-gray-700 text-[12px]">
-        {truncateAddress(active.address)}
+        {truncateAddress(activePrivy.address)}
       </span>
       <span className="text-[10px] text-gray-400 uppercase tracking-wider">
-        {sourceLabel(active.walletClientType)}
+        {sourceLabel(activePrivy.walletClientType)}
       </span>
       <button
-        onClick={logout}
+        onClick={() => {
+          logout();
+          if (wagmiConnected) wagmiDisconnect();
+        }}
         className="text-[11px] text-gray-400 hover:text-red transition-colors"
       >
         Log out

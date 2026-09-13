@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ResolvedIdentity } from "@/lib/identity-resolve";
 import { shortAddress } from "@/lib/identity-resolve";
 import type { UniverseEdge, UniverseHub, UniverseNode } from "@/lib/universe";
-
-const ARCSCAN = "https://testnet.arcscan.app";
+import { txUrl } from "@/lib/explorer";
 
 function formatUSDC(raw: bigint): string {
   const whole = raw / 1_000_000n;
@@ -141,7 +140,7 @@ export function NodePanel({
           return (
             <a
               key={e.id}
-              href={`${ARCSCAN}/tx/${e.txHash}`}
+              href={txUrl(e.txHash)}
               target="_blank"
               rel="noreferrer"
               className="block border border-gray-100 rounded-md px-3 py-2 hover:border-gray-400 transition-colors"

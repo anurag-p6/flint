@@ -14,16 +14,20 @@ export interface Milestone {
   issueUrl: string
   closedAt: string | null
   createdAt: string
-  subMilestones?: { title: string; releaseBps: number | null }[]
+  threshold: number | null
+  subMilestones?: { title: string; releaseBps: number | null; linkedPRs: number[] }[]
   grantee?: string | null
   deadline?: string | null
   specErrors?: string[]
 }
 
 export async function GET(request: Request) {
+  // No login required: server PAT serves public data so grantees never
+  // sign in. Session token is only a fallback for local dev without PAT.
   const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const pat = process.env.GITHUB_SERVER_PAT ?? (session as any)?.accessToken
+  if (!pat) {
+    return NextResponse.json({ error: "No GitHub credential", milestones: [] }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)
@@ -37,7 +41,7 @@ export async function GET(request: Request) {
       `https://api.github.com/repos/${repo}/issues?labels=flint&state=all&per_page=50&sort=created&direction=asc`,
       {
         headers: {
-          Authorization: `token ${session.accessToken}`,
+          Authorization: `token ${pat}`,
           Accept: "application/vnd.github.v3+json",
           "User-Agent": "Flint",
         },
@@ -73,8 +77,13 @@ export async function GET(request: Request) {
           issueUrl: i.html_url,
           closedAt: i.closed_at ?? null,
           createdAt: i.created_at,
+          threshold: spec.threshold,
           subMilestones: spec.milestones.length > 1
-            ? spec.milestones.map((m) => ({ title: m.title, releaseBps: m.releaseBps }))
+            ? spec.milestones.map((m) => ({
+                title: m.title,
+                releaseBps: m.releaseBps,
+                linkedPRs: m.linkedPRs,
+              }))
             : undefined,
           grantee: spec.grantee,
           deadline: spec.deadline,
