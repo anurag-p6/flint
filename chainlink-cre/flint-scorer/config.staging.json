@@ -1,14 +1,16 @@
 {
-  "schedule": "0 0 */1 * * *",
-  "repoOwner": "vercel",
-  "repoName": "next.js",
+  "schedule": "*/2 * * * *",
+  "repoOwner": "anurag-p6",
+  "repoName": "flint",
   "cycleDays": 30,
   "geminiApiUrl": "https://generativelanguage.googleapis.com",
-  "geminiModel": "gemini-3.5-flash-lite",
+  "geminiModel": "gemini-2.0-flash",
+  "llmApiUrl": "https://api.groq.com/openai/v1",
+  "llmModel": "openai/gpt-oss-120b",
   "contributorMapping": {
-    "spirosikmd": "0x1111111111111111111111111111111111111111",
-    "bgw": "0x2222222222222222222222222222222222222222",
-    "gaearon": "0x3333333333333333333333333333333333333333",
-    "petehunt": "0x4444444444444444444444444444444444444444"
+    "anurag-p6": "0x225Fd0b9D011C8BBffd0f0c6f854Cd23b99B6aF7",
+    "RIT2006ESH": "0x1F3305F4d20F49c3505B5175d76A6619E4d00B38",
+    "AdarshYadav9": "0xe98106BFfEd8A04979A351456ad5D2b4eE2dbDe8",
+    "inline-arc": "0x1A867ED9b11FA5ee4D3120B9E50A9645c1E0e5aF"
   }
 }
