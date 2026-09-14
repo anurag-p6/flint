@@ -178,7 +178,9 @@ contract FlintEscrow is ReentrancyGuard, Ownable {
         if (!isScorer[msg.sender]) revert NotScorer();
         Pool storage pool = pools[repoId];
         if (pool.maintainer == address(0)) revert PoolNotFound();
-        if (pool.status != PoolStatus.Active) {
+        // Overwrite is allowed until approve — so a CONTRIBUTORS.md update
+        // can replace stale/demo wallets without a new pool.
+        if (pool.status != PoolStatus.Active && pool.status != PoolStatus.ScoresSubmitted) {
             revert InvalidStatus(PoolStatus.Active, pool.status);
         }
         if (contributors.length != scores.length) revert ArrayLengthMismatch();
