@@ -13,3 +13,8 @@ contracts/docs/
 
 # Dotenv file 
 **/.env
+
+**/node_modules/
+subgraphs/build/
+subgraphs/generated/
+subgraphs/node_modules/
