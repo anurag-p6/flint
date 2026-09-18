@@ -10,6 +10,7 @@ import {FlintBatch} from "../src/core/FlintBatch.sol";
 import {FlintIdentity} from "../src/identity/FlintIdentity.sol";
 import {ProportionalPolicy} from "../src/policies/ProportionalPolicy.sol";
 import {SqrtPolicy} from "../src/policies/SqrtPolicy.sol";
+import {EqualPolicy} from "../src/policies/EqualPolicy.sol";
 import {FlintScorerReceiver} from "../src/core/FlintScorerReceiver.sol";
 /// @title Deploy
 /// @notice Deploys all Flint protocol contracts
@@ -51,6 +52,9 @@ contract Deploy is Script {
         SqrtPolicy sqrt = new SqrtPolicy();
         console.log("SqrtPolicy deployed at:", address(sqrt));
 
+        EqualPolicy equal_ = new EqualPolicy();
+        console.log("EqualPolicy deployed at:", address(equal_));
+
         // 5. Deploy registry and set protocol contracts
         FlintRegistry registry = new FlintRegistry(deployer);
         registry.setProtocolContracts(
@@ -88,6 +92,7 @@ contract Deploy is Script {
         console.log("FlintScorerReceiver: ", address(receiver));
         console.log("ProportionalPolicy:  ", address(proportional));
         console.log("SqrtPolicy:          ", address(sqrt));
+        console.log("EqualPolicy:         ", address(equal_));
         console.log("USDC (Base Sepolia): ", USDC_BASE_SEPOLIA);
         console.log("USDC (Arc Testnet):  ", USDC_ARC_TESTNET);
     }

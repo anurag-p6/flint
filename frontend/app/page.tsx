@@ -3,27 +3,21 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useSession, signIn, signOut } from "next-auth/react"
+import { WorkRail } from "@/components/work-rail"
 
 const features = [
   {
-    title: "Agent-verified work",
-    desc: "A keeper agent verifies merged PRs and milestones on every run. A Chainlink CRE confidential workflow scores contributions with API keys sealed inside a TEE.",
+    title: "Work is scored, not guessed",
+    desc: "Merged PRs, commits, and reviews become a split. An agent does the math. You don't.",
   },
   {
-    title: "Signature-gated payouts",
-    desc: "Every payout needs a one-click approval signature from the maintainer's wallet. No funds move without it.",
+    title: "Nothing moves without you",
+    desc: "One signature from the maintainer wallet releases USDC. Not a bot. Not a spreadsheet.",
   },
   {
-    title: "On-chain audit trail",
-    desc: "A subgraph indexes every score, payout, and milestone. Fully queryable, permanently verifiable.",
+    title: "Proof that lasts",
+    desc: "Every payout mints a soulbound receipt. The work is on-chain. The resume writes itself.",
   },
-]
-
-const stats = [
-  { label: "Contracts deployed", value: "9" },
-  { label: "Chain", value: "Arc Testnet" },
-  { label: "Scoring model", value: "Gemini Flash" },
-  { label: "Token", value: "USDC" },
 ]
 
 export default function Home() {
@@ -51,35 +45,46 @@ export default function Home() {
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
+                className="px-4 py-2 text-[13px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
               >
                 Sign out
               </button>
             </div>
-          ) : null}
+          ) : (
+            <button
+              onClick={() => signIn("github")}
+              className="px-4 py-2 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors"
+            >
+              Sign in
+            </button>
+          )}
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-8 py-20">
-        <div className="max-w-2xl w-full space-y-16">
+      <main className="flex-1 flex flex-col items-center px-8 py-16 sm:py-20">
+        <div className="max-w-2xl w-full space-y-14">
           <div className="space-y-4">
-            <h1 className="text-[28px] font-semibold text-black tracking-tight leading-tight">
-              Trustless disbursement for grants<br />and open source contributions
+            <p className="text-[11px] text-gray-400 uppercase tracking-wider">
+              Open source · Grants · USDC
+            </p>
+            <h1 className="text-[28px] sm:text-[32px] font-semibold text-black tracking-tight leading-tight">
+              Merge the PR.
+              <br />
+              Pay the people who shipped it.
             </h1>
             <p className="text-[15px] text-gray-700 leading-relaxed max-w-lg">
-              Work verified by agents. The maintainer's signature approves every payout. Blockchain records
-              everything. No spreadsheets, no manual transfers, no trust required.
+              Flint watches the repo, scores the work, and settles USDC on-chain.
+              You sign once. Contributors get paid. No invoices. No trust required.
             </p>
 
             {!session ? (
-              <div className="mt-6 p-4 border border-gray-100 rounded-md space-y-3">
-                <p className="text-[13px] text-gray-700 font-medium">Connect with GitHub to get started</p>
+              <div className="pt-2">
                 <button
-                  onClick={() => signIn("github")}
-                  className="w-full px-5 py-2.5 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors flex items-center justify-center gap-2"
+                  onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+                  className="px-5 py-2.5 text-[13px] font-medium text-white bg-accent rounded-md hover:bg-accent/90 transition-colors inline-flex items-center gap-2"
                 >
-                  <Image src="/github.svg" alt="GitHub logo" width={18} height={18} />
-                  Sign in with GitHub
+                  <Image src="/github.svg" alt="" width={16} height={16} className="invert" />
+                  Continue with GitHub
                 </button>
               </div>
             ) : (
@@ -94,22 +99,15 @@ export default function Home() {
                   href="/grant"
                   className="px-5 py-2.5 text-[13px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
                 >
-                  View grants
+                  Grants
                 </Link>
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <p className="text-[11px] text-gray-400 uppercase tracking-wider">{s.label}</p>
-                <p className="text-[15px] text-black font-medium mt-1">{s.value}</p>
-              </div>
-            ))}
-          </div>
+          <WorkRail />
 
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-3 gap-8">
             {features.map((f) => (
               <div key={f.title} className="space-y-2">
                 <p className="text-[14px] font-medium text-black">{f.title}</p>
@@ -120,8 +118,8 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="border-t border-gray-100 px-8 py-8 text-center text-[12px] text-gray-400">
-        <p>Built for ETHOnline 2026 • Arc • Chainlink CRE • The Graph</p>
+      <footer className="border-t border-gray-100 px-8 py-6 text-center text-[12px] text-gray-400">
+        Flint · work in, money out
       </footer>
     </div>
   )

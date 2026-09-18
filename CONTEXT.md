@@ -13,7 +13,7 @@
 **What it does:**
 - Maintainers deposit a reward pool or grant
 - An AI agent scores GitHub contributions (PRs, reviews, issues) using an LLM
-- A Ledger device physically approves the payout (human gate)
+- The maintainer approves the payout with one click from their Privy embedded wallet (human gate)
 - Funds move automatically via smart contracts
 - Contributors receive ERC-5484 soulbound tokens as permanent on-chain proof of work
 - The Graph indexes everything for a queryable audit trail
@@ -23,7 +23,7 @@
 2. **Open Mode** — any repo. Anyone contributes, top contributors share the pool at cycle end
 3. **Grant Mode** — grant programs (Ethereum Foundation, Arbitrum DAO, Mozilla, etc.). Milestone-based tranche releases
 
-**ETHOnline sponsor tracks:** Ledger, Chainlink, The Graph
+**ETHOnline sponsor tracks:** Privy, Chainlink, The Graph
 
 ---
 
@@ -145,8 +145,8 @@ payout_i = (sqrt(score_i) / SUM(sqrt(all_scores))) * total_pool
 |  BFT consensus, on-chain score submission            |
 |  (BLOCKER: requires pre-approval from Chainlink)    |
 +-----------------------------------------------------+
-|  Layer 4 — Human Approval Gate  [Ledger]            |
-|  Maintainer reviews, physical confirmation, hash    |
+|  Layer 4 — Human Approval Gate  [Privy embedded wallet] |
+|  Maintainer reviews, one-click approval, hash       |
 +-----------------------------------------------------+
 |  Layer 5 — Disbursement  [Smart Contracts]          |
 |  Payout math, batch payment, ERC-5484 mint          |
@@ -179,7 +179,7 @@ FlintEscrow shows scores on dashboard
 Maintainer reviews --> clicks "Approve"
         |
         v
-Ledger device lights up --> physical button press
+Maintainer confirms in embedded wallet --> signature
         |
         v
 Payout executes --> soulbound tokens minted --> The Graph indexes
@@ -275,9 +275,9 @@ contracts/
   src/
     core/
       FlintRegistry.sol     — Permissionless protocol entry point, repo + grant registration
-      FlintEscrow.sol       — Program/Open mode escrow, scoring, Ledger approval, batch payout, 30-day timeout
+      FlintEscrow.sol       — Program/Open mode escrow, scoring, maintainer approval, batch payout, 30-day timeout
       FlintGrant.sol        — Milestone-based grant escrow, tranche releases, 14-day auto-release, grantor reclaim
-      FlintBatch.sol        — Batch ERC-20 payment executor with Ledger ECDSA signature verification
+      FlintBatch.sol        — Batch ERC-20 payment executor with approver ECDSA signature verification
       FlintReceipt.sol      — ERC-5484 soulbound NFT, fully on-chain JSON metadata (Base64)
     interfaces/
       IScoringAdapter.sol   — Pluggable scoring adapter interface (GitHub, GitLab, etc.)
@@ -300,14 +300,14 @@ contracts/
 **FlintEscrow.sol:**
 - `createPool(repoId, token, amount, payoutPolicy, ledgerSigner, mode)` — maintainer deposits
 - `submitScores(repoId, contributors[], scores[])` — called by authorized scorer (agent)
-- `approveAndPayout(repoId, signature)` — Ledger ECDSA verification + batch payout + receipt mint
+- `approveAndPayout(repoId, signature)` — approver ECDSA verification + batch payout + receipt mint
 - `timeoutRelease(repoId)` — 30-day auto-release if maintainer doesn't approve
 - `reclaimAfterTimeout(repoId)` — maintainer reclaims if no scores submitted
 
 **FlintGrant.sol:**
 - `createGrant(grantee, token, totalAmount, ledgerApprover, descriptions[], trancheBps[], deadlines[])` — grantor deposits
 - `verifyMilestone(grantId, milestoneId)` — called by Chainlink/verifier
-- `releaseTranche(grantId, milestoneId, signature)` — Ledger-signed tranche release
+- `releaseTranche(grantId, milestoneId, signature)` — approver-signed tranche release
 - `autoRelease(grantId, milestoneId)` — 14-day timeout after verified but unpaid
 - `reclaimUndisbursed(grantId)` — grantor recovery after last deadline passes
 
@@ -319,7 +319,7 @@ contracts/
 
 **FlintBatch.sol:**
 - `executeBatch(token, recipients[], amounts[], signer, signature)` — single-tx multi-transfer
-- `computeApprovalHash(token, recipients[], amounts[])` — for Ledger to sign
+- `computeApprovalHash(token, recipients[], amounts[])` — for the approver to sign
 
 **FlintRegistry.sol:**
 - `registerRepo(repoId, escrow)` — permissionless repo registration
@@ -336,7 +336,7 @@ contracts/
 | Decision | Choice | Why |
 |---|---|---|
 | Scores | uint256 scaled by 1e6 | Avoids floating point in Solidity |
-| Ledger verification | ECDSA ecrecover on EIP-191 signed hashes | Standard, no custom crypto |
+| Approval verification | ECDSA ecrecover on EIP-191 signed hashes | Standard, no custom crypto |
 | Soulbound enforcement | _update() override blocks transfers | Only minting allowed |
 | Timeout: Escrow | 30 days | Protects contributors from free labor |
 | Timeout: Grant auto-release | 14 days after verified milestone | Protects grantees from bureaucracy |
@@ -435,7 +435,7 @@ ERC-5484 soulbound receipts accumulate into a queryable on-chain reputation:
 |---|---|---|
 | **Day 1** | Smart Contracts — all contracts written + compiled on Sepolia | DONE |
 | **Day 2** | AI Agent + GitHub App — webhook server, xAI integration, scoring logic | TODO |
-| **Day 3** | Ledger Key Ring + Backend API — approval flow, dashboard API routes | TODO |
+| **Day 3** | Privy embedded wallets + approval flow — email login, one-click payout signing | TODO |
 | **Day 4** | Frontend (Next.js) — maintainer dashboard, contributor profile, wallet connect | TODO |
 | **Day 5** | The Graph + Integration — subgraph, query integration, end-to-end testing | TODO |
 | **Day 6** | Buffer — polish, demo video, submission write-up | TODO |
@@ -482,7 +482,7 @@ flint/
   frontend/                          — Empty (Day 4)
   chainlink/                         — Empty (Day 2-3, CRE workflow)
   subgraphs/                         — Empty (Day 5)
-  ledger/                            — Empty (Day 3)
+  frontend/lib/privy/              — Privy embedded-wallet signing helpers
 ```
 
 ---
@@ -505,7 +505,7 @@ flint/
 
 | Project | Origin | Flint Differentiator |
 |---|---|---|
-| SourceCred | Protocol Labs grant, 2018. Dormant since 2022 | Flint has on-chain payouts, Ledger approval, soulbound receipts |
+| SourceCred | Protocol Labs grant, 2018. Dormant since 2022 | Flint has on-chain payouts, approver-signature gate, soulbound receipts |
 | GitDrip | GenLayer Builder Portal, 2026 | Flint has hardware signing, ERC-5484, three modes, audit trail |
 | Coordinape | Yearn Finance internal, 2021 | Flint is GitHub-based (not peer allocation), has grant mode |
 | Gnosis Safe | ConsenSys, widely used for grants | Flint adds scoring, milestone verification, soulbound receipts |
@@ -517,13 +517,13 @@ flint/
 
 **Idea rating:** 8/10
 **Feasibility (6 days):** 7.5/10
-**Sponsor prize probability:** 8.5/10 (at least one of Ledger/Chainlink/The Graph)
+**Sponsor prize probability:** 8.5/10 (at least one of Privy/Chainlink/The Graph)
 **Main prize probability:** 5/10 (needs infrastructure framing to compete with DeFi/ZK projects)
 
-**Winning demo moment:** Ledger device lighting up on camera with physical button press.
+**Winning demo moment:** Maintainer approves a full payout on camera with one click from an email-created wallet — no seed phrase, no extension.
 
 **Infrastructure pitch:** *"Flint is the on-chain reputation primitive for open source — GitHub today, every platform tomorrow."*
 
 **Grant pitch:** *"Every Web3 grant program runs on Google Forms and Gnosis Safe. Flint replaces both."*
 
-**Demo closer:** *"No manager. No spreadsheet. No bank. No trust required. Just the Ledger."*
+**Demo closer:** *"No manager. No spreadsheet. No bank. No trust required. Just a signature."*

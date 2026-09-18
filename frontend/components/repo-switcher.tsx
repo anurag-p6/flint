@@ -91,7 +91,8 @@ export function RepoSwitcher() {
   }
 
   return (
-    <div className="relative">
+    <div className="flex items-center gap-2">
+      <div className="relative flex-1">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="px-3 py-2 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors text-left flex items-center justify-between gap-2"
@@ -124,6 +125,16 @@ export function RepoSwitcher() {
           ))}
         </div>
       )}
+      </div>
+      <a
+        href="https://github.com/apps/flint-protocol/installations/new"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Add the Flint app to another GitHub repo"
+        className="w-8 h-8 shrink-0 rounded-full border border-gray-100 text-gray-500 hover:text-black hover:border-gray-400 transition-colors flex items-center justify-center text-[16px] leading-none"
+      >
+        +
+      </a>
     </div>
   )
 }

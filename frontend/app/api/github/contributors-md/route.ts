@@ -1,39 +1,16 @@
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { NextResponse } from "next/server"
+import { parseContributorsMd } from "@/lib/contributor-mapping"
 
-// Parses lines like:
-// | @username | 0x1234...5678 |
-// @username 0x1234...5678
-// username: 0x1234...5678
-const ETH_ADDRESS_RE = /0x[a-fA-F0-9]{40}/
-const GITHUB_LOGIN_RE = /@?([\w-]+)/
-
-export function parseContributorsMd(content: string): Record<string, string> {
-  const mapping: Record<string, string> = {}
-
-  for (const line of content.split("\n")) {
-    const address = ETH_ADDRESS_RE.exec(line)?.[0]
-    if (!address) continue
-
-    // Remove the address from the line then look for a username
-    const withoutAddress = line.replace(address, "")
-    const loginMatch = GITHUB_LOGIN_RE.exec(withoutAddress)
-    if (!loginMatch) continue
-
-    const login = loginMatch[1].toLowerCase()
-    if (login && login !== "github" && login !== "wallet") {
-      mapping[login] = address
-    }
-  }
-
-  return mapping
-}
+export { parseContributorsMd }
 
 export async function GET(request: Request) {
+  // No login required: server PAT serves public repo data.
   const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const pat = process.env.GITHUB_SERVER_PAT ?? (session as any)?.accessToken
+  if (!pat) {
+    return NextResponse.json({ error: "No GitHub credential" }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)
@@ -47,7 +24,7 @@ export async function GET(request: Request) {
       `https://api.github.com/repos/${repo}/contents/CONTRIBUTORS.md`,
       {
         headers: {
-          Authorization: `token ${session.accessToken}`,
+          Authorization: `token ${pat}`,
           Accept: "application/vnd.github.v3+json",
           "User-Agent": "Flint",
         },

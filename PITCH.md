@@ -10,9 +10,9 @@ All key questions, research, and answers compiled from pre-build planning.
 
 **Strengths:**
 - The problem is real and well-scoped — the "one human bottleneck" framing is compelling and judges will understand it immediately
-- The Ledger device lighting up on camera is an excellent hackathon demo moment — tactile, visual, memorable
+- The maintainer approving a full payout on camera with one click from an email-created wallet is an excellent hackathon demo moment — tactile, visual, memorable
 - ERC-5484 soulbound receipts as an on-chain OSS resume is a genuinely novel framing, not just a utility feature
-- Sponsor integrations are deep, not superficial — Chainlink is doing real work (not just a price feed), Ledger is in the critical path (not bolted on)
+- Sponsor integrations are deep, not superficial — Chainlink is doing real work (not just a price feed), Privy embedded wallets are in the critical path (not bolted on)
 - The differentiation table is sharp — Flint wins on every column that matters to judges
 
 **Weaknesses:**
@@ -25,7 +25,7 @@ All key questions, research, and answers compiled from pre-build planning.
 |---|---|---|
 | Day 1 | Contracts (FlintEscrow, FlintBatch, FlintReceipt) + deploy Sepolia | Low |
 | Day 2 | Chainlink Functions — GitHub fetch + scoring rubric | Medium |
-| Day 3 | GitHub identity verification + Ledger Key Ring integration | High (buffer absorbed) |
+| Day 3 | GitHub identity verification + Privy embedded-wallet approval flow | High (buffer absorbed) |
 | Day 4 | Frontend — maintainer dashboard + contributor profile | Medium |
 | Day 5 | The Graph subgraph + query integration in frontend | Low |
 | Day 6 | End-to-end testing, demo polish, video recording | Low |
@@ -38,7 +38,7 @@ All key questions, research, and answers compiled from pre-build planning.
 
 **What AI agents don't compress:**
 - Chainlink Functions debugging (sandboxed env, opaque errors, costs LINK per test)
-- Ledger Key Ring integration against a physical device
+- Privy embedded-wallet signing against a real approval hash
 - End-to-end integration testing across all layers
 
 ---
@@ -49,8 +49,8 @@ All key questions, research, and answers compiled from pre-build planning.
 
 **Why it's NOT nalla:**
 - Problem is real and relatable — ETHGlobal judges are mostly developers who have felt the OSS payment frustration firsthand
-- Three sponsor tracks (Ledger + Chainlink + The Graph) = three separate prize pools
-- Ledger device on camera is cinematic — most projects are just clicking browser buttons
+- Three sponsor tracks (Privy + Chainlink + The Graph) = three separate prize pools
+- One-click email-wallet approval on camera is cinematic — most projects are just clicking browser buttons
 - Scoring algorithm is defensible and sophisticated
 - ERC-5484 soulbound as on-chain OSS resume is a fresh angle judges will remember
 
@@ -65,7 +65,7 @@ All key questions, research, and answers compiled from pre-build planning.
 | Adoption friction | Contributors + maintainers both need to register and trust Flint |
 
 **Prize probability:**
-- Sponsor prizes (Ledger / Chainlink / The Graph): **8.5/10** — at least one is very likely
+- Sponsor prizes (Privy / Chainlink / The Graph): **8.5/10** — at least one is very likely
 - Main ETHOnline prize: **5/10** — needs infrastructure framing, not product framing
 
 **The one thing that could push it to 9/10:**
@@ -224,7 +224,7 @@ if (payout_i > 0 && payout_i < floor):
 | Calculate tier scores | Chainlink Functions | Done with fetched data |
 | Store raw scores on-chain | Smart contract | Permanent, auditable |
 | Payout formula | Smart contract | Pure math, no external data |
-| Ledger signs batch | Ledger Key Ring | Human approval gate |
+| Maintainer signs batch | Privy embedded wallet | Human approval gate |
 | Events indexed | The Graph | Audit trail |
 
 **Implementation note:** Store scores as `uint256` scaled by `1e6` — keeps floating point math clean in Solidity.
@@ -364,7 +364,7 @@ A project called `YoneCode/GitDrip` solves nearly the same problem using GenLaye
 
 | | GitDrip (GenLayer) | Flint |
 |---|---|---|
-| Human approval gate | None | Ledger hardware signing |
+| Human approval gate | None | One-click approver signature |
 | Data source | GenLayer validators | Chainlink Functions (tamper-proof) |
 | Portable identity | None | ERC-5484 soulbound token |
 | Contribution modes | Single mode | Program Mode + Open Mode |
@@ -431,7 +431,7 @@ FlintGrant.createGrant(
 | Reach N GitHub stars | GitHub repo API — check stargazers_count |
 | Complete audit | Fetch audit report URL, verify it exists |
 | Hit N active users | Dune Analytics API or on-chain event count |
-| Manual milestone | Falls back to Ledger-signed approval only |
+| Manual milestone | Falls back to approver-signed approval only |
 
 **Tranche disbursement flow:**
 
@@ -440,7 +440,7 @@ Grant created → 30% released immediately (upfront)
      ↓
 Milestone 1 completed → Chainlink verifies on-chain
      ↓
-Grant committee reviews → Ledger signs approval
+Grant committee reviews → maintainer signs approval from embedded wallet
      ↓
 30% tranche released → ERC-5484 minted (proof of milestone 1)
      ↓
@@ -461,7 +461,7 @@ The Graph indexes entire grant history
 |---|---|---|
 | Market size | Medium (OSS bounties) | Large (billions/year in grants) |
 | Pain intensity | Annoying | High — legal, fiduciary, cross-border |
-| Ledger fit | Good | Excellent — grant committees have fiduciary duty |
+| Privy fit | Good | Excellent — email wallets make committee payouts one-click |
 | Audit trail need | Nice to have | Required — grant reporting obligations |
 | Chainlink fit | Good (scoring) | Excellent (milestone verification) |
 | Differentiation | Several competitors | Near zero competitors |
@@ -479,13 +479,13 @@ Key additions beyond `FlintEscrow.sol`:
 
 ## One-Line Pitches
 
-**Product pitch:** *"Flint automates OSS contributor payments — GitHub reputation becomes crypto, Ledger proves a human approved, blockchain records everything."*
+**Product pitch:** *"Flint automates OSS contributor payments — GitHub reputation becomes crypto, the maintainer's signature proves a human approved, blockchain records everything."*
 
-**Infrastructure pitch:** *"Flint is the trustless disbursement layer for open source and grants — reputation scores contributors, milestones unlock grant tranches, Ledger proves a human approved, blockchain records everything."*
+**Infrastructure pitch:** *"Flint is the trustless disbursement layer for open source and grants — reputation scores contributors, milestones unlock grant tranches, the maintainer's signature proves a human approved, blockchain records everything."*
 
-**Grant pitch:** *"Every Web3 grant program runs on Google Forms and Gnosis Safe. Flint replaces both — milestones on-chain, Chainlink verifies completion, Ledger approves disbursement, no bank required."*
+**Grant pitch:** *"Every Web3 grant program runs on Google Forms and Gnosis Safe. Flint replaces both — milestones on-chain, Chainlink verifies completion, one click approves disbursement, no bank required."*
 
-**Demo closer:** *"No manager. No spreadsheet. No bank. No trust required. Just the Ledger."*
+**Demo closer:** *"No manager. No spreadsheet. No bank. No trust required. Just a signature."*
 
 ---
 
@@ -550,3 +550,36 @@ Phase 4:          Flint Score becomes the on-chain reputation primitive
 ### Strongest Angle for Judges
 
 Lead with **Grant Mode** — it's the biggest market ($500M+), the pain is obvious (everyone's seen terrible grant processes), and the revenue model is clear (% fee on disbursements). OSS programs are the wedge, grants are the business.
+
+---
+
+## Submission Beats — Arc Bounties (Sept 2026 build)
+
+Target: Arc Best DeFi/Onchain Finance + Best Agentic Economy with Circle Agent Stack.
+
+### The ghosting-backstop beat (demo moment #2, after the one-click approval)
+
+> "Now watch what happens when the maintainer disappears. This milestone was
+> verified 14 days ago and never released. Anyone — the grantee, a stranger —
+> calls one permissionless function, and the escrow pays out by itself. No
+> committee. No ticket. The contract is the backstop."
+
+Show: Verified row with the auto-release countdown → keeper dry-run output (or
+arcscan `TrancheAutoReleased`) → grantee balance + SBT.
+
+### Quirk disclosures (say them before judges find them)
+
+- Keeper key is committee-operated today (verifier EOA); DON path covers batch
+  scoring. Stated openly in README.
+- The 14-day wait is proven by forge time-warp unit tests + keeper dry-run
+  detection on live state — not by waiting 14 days on camera.
+- Arc native-USDC `balanceOf` reads back mirror-scaled; dapp shows amounts
+  from `PayoutExecuted`/`TrancheReleased` events + preview math.
+
+### Why Arc lines (use verbatim)
+
+- "Fees are dollar-denominated — a maintainer always knows a payout costs
+  cents, never a fraction of a volatile token."
+- "Fund from any chain, disburse on Arc — CCTP bridge in, native USDC out."
+- "The agent holds a wallet with an allowlist of three contracts. Even a
+  compromised scorer key can't move money anywhere else."

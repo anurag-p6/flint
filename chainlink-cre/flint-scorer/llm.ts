@@ -52,39 +52,35 @@ export function classifyPRComplexity(
 	pr: PRData,
 ): ComplexityResult {
 	const body = JSON.stringify({
-		contents: [
-			{
-				parts: [
-					{ text: SYSTEM_PROMPT },
-					{ text: `\n\nAnalyze this PR:\n${formatPRForAnalysis(pr)}` },
-				],
-			},
+		model,
+		messages: [
+			{ role: 'system', content: SYSTEM_PROMPT },
+			{ role: 'user', content: `Analyze this PR:\n${formatPRForAnalysis(pr)}` },
 		],
-		generationConfig: {
-			responseMimeType: 'application/json',
-			temperature: 0.1,
-		},
+		temperature: 0.1,
+		response_format: { type: 'json_object' },
 	})
 
 	const response = new cre.capabilities.HTTPClient()
 		.sendRequest(runtime, {
-			url: `${apiUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`,
+			url: `${apiUrl}/chat/completions`,
 			method: 'POST',
 			multiHeaders: {
 				'Content-Type': { values: ['application/json'] },
+				Authorization: { values: [`Bearer ${apiKey}`] },
 			},
 			body: new TextEncoder().encode(body),
 		})
 		.result()
 
 	if (!ok(response)) {
-		runtime.log(`Gemini API failed: ${response.statusCode}, using default complexity`)
+		runtime.log(`LLM API failed: ${response.statusCode}, using default complexity`)
 		return DEFAULT_RESULT
 	}
 
 	try {
 		const parsed = JSON.parse(text(response))
-		const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text
+		const content = parsed.choices?.[0]?.message?.content
 		if (!content) return DEFAULT_RESULT
 
 		const result = JSON.parse(content) as ComplexityResult

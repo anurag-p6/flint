@@ -20,9 +20,10 @@ Disbursing funds for grants or contributor rewards is still a manual, trust-heav
 - Grantees ghost after receiving funds with zero accountability
 
 **For OSS programs** (Google Summer of Code, LFX Mentorship, Outreachy, MLH Fellowship, Season of KDE, and similar):
-- Wallet addresses collected via Google Forms
-- Contributor shares calculated manually in spreadsheets
-- Funds sent one by one with no on-chain proof
+- Stipends go out through traditional bank transfers, not crypto wallets
+- Contributors file PAN, tax forms, and bank paperwork before seeing a cent
+- International wires take days and lose a cut to forex fees and deductions
+- No on-chain proof that the right person got paid for the right work
 
 In both cases there is always one human in the middle who is a bottleneck, a trust assumption, and a single point of failure.
 
@@ -85,6 +86,18 @@ Ghosting backstop: verified plus 14 days with no release, keeper auto-releases
 Grantor reclaims after the last deadline (dashboard button, grantor only)
 ```
 
+### Autonomous pipeline (no human in the loop after funding)
+
+- **Webhook** (`frontend/app/api/github/webhook`) — HMAC-verified GitHub events.
+  Merged PRs and closed issues trigger the keeper within seconds.
+- **Keeper** (`frontend/app/api/keeper`) — stateless cron route. Verify pass:
+  every linked PR merged → `verifyMilestone`. Timeout pass: verified + 14 days
+  → permissionless `autoRelease`; expired grants flagged reclaimable (grantor-only
+  tx, surfaced on the dashboard). `?dryRun=1` previews actions without sending.
+- **Pending grants** (`frontend/app/api/grants/pending`) — `flint` issues matched
+  against on-chain state via `source: owner/repo#issue` tags; unfunded ones render
+  as one-click fundable cards with timelines, deadlines, and auto-release countdowns.
+
 ---
 
 ## Scoring Engine
@@ -136,6 +149,15 @@ Money gets in from anywhere. The dashboard has a built-in CCTP bridge (Circle Ap
 The scorer is a Circle Agent Wallet with a spending policy locked to Flint contract addresses only. Even if that key leaks, it cannot send funds anywhere else. Setup: `AGENT_WALLET_ARC.md`.
 
 Next step on the roadmap: same deploy on Arc Mainnet before September 30.
+
+### Wallet signing (Privy, used — not a prize track)
+
+Maintainers can log in with email — a self-custodial embedded wallet is
+auto-created, no seed phrase. Every payout and tranche release is a one-click
+`personal_sign` of the on-chain approval hash from that wallet (browser wallets
+work too as fallback), verified locally before submission — wrong-wallet
+signatures never reach the chain. Spec: `frontend/lib/privy/`. Privy is
+product infrastructure here, not a bounty submission.
 
 ### Chainlink CRE
 

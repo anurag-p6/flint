@@ -3,9 +3,11 @@ import { authOptions } from "@/lib/auth"
 import { NextResponse } from "next/server"
 
 export async function GET(request: Request) {
+  // No login required: server PAT serves public repo data.
   const session = await getServerSession(authOptions)
-  if (!session?.accessToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const pat = process.env.GITHUB_SERVER_PAT ?? (session as any)?.accessToken
+  if (!pat) {
+    return NextResponse.json({ error: "No GitHub credential" }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)
@@ -15,7 +17,7 @@ export async function GET(request: Request) {
   }
 
   const headers = {
-    Authorization: `token ${session.accessToken}`,
+    Authorization: `token ${pat}`,
     Accept: "application/vnd.github.v3+json",
     "User-Agent": "Flint",
   }

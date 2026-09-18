@@ -37,6 +37,8 @@ export interface IssueSpec {
   grantee: string | null;
   deadline: string | null;
   amount: number | null;
+  /** Quality gate 0–100. Null = default (see DEFAULT_THRESHOLD in lib/threshold). */
+  threshold: number | null;
   milestones: SubMilestone[];
   errors: string[];
 }
@@ -58,8 +60,8 @@ function parseReleaseBps(text: string): number | null {
   return Number.isInteger(bps) ? bps : NaN as unknown as null;
 }
 
-function parseFooter(body: string): { grantee: string | null; deadline: string | null; amount: number | null } {
-  const out = { grantee: null as string | null, deadline: null as string | null, amount: null as number | null };
+function parseFooter(body: string): { grantee: string | null; deadline: string | null; amount: number | null; threshold: number | null } {
+  const out = { grantee: null as string | null, deadline: null as string | null, amount: null as number | null, threshold: null as number | null };
   const match = body.match(/<!--\s*flint([\s\S]*?)-->/i);
   if (!match) return out;
   for (const line of match[1].split("\n")) {
@@ -67,11 +69,20 @@ function parseFooter(body: string): { grantee: string | null; deadline: string |
     if (!kv) continue;
     const key = kv[1].toLowerCase();
     const value = kv[2];
-    if (key === "grantee") out.grantee = value.replace(/^@/, "");
+    if (key === "grantee") {
+      // GitHub logins are [a-z0-9-]; placeholders like GRANTEE_LOGIN or
+      // <wallet> fail this and resolve to null (shown as unassigned).
+      const v = value.replace(/^@/, "");
+      out.grantee = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i.test(v) ? v : null;
+    }
     else if (key === "deadline") out.deadline = value;
     else if (key === "amount") {
       const n = parseFloat(value);
       out.amount = Number.isFinite(n) ? n : null;
+    }
+    else if (key === "threshold") {
+      const n = parseFloat(value);
+      out.threshold = Number.isFinite(n) ? n : null;
     }
   }
   return out;
@@ -149,11 +160,16 @@ export function parseIssueSpec(body: string): IssueSpec {
   if (footer.amount !== null && footer.amount <= 0) {
     errors.push(`Invalid amount "${footer.amount}"`);
   }
+  if (footer.threshold !== null && !(footer.threshold >= 0 && footer.threshold <= 100)) {
+    errors.push(`Invalid threshold "${footer.threshold}" (expected 0–100)`);
+    footer.threshold = null;
+  }
 
   return {
     grantee: footer.grantee,
     deadline: footer.deadline,
     amount: footer.amount,
+    threshold: footer.threshold,
     milestones,
     errors,
   };

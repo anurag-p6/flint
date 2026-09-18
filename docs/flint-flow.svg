@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" width="1600" height="420" role="img" aria-labelledby="title desc">
+  <title id="title">Flint disbursement flow</title>
+  <desc id="desc">Fund escrow, ship on GitHub, TEE scores, maintainer signs, USDC and soulbound receipt.</desc>
+  <rect width="1600" height="420" fill="#ffffff"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <polygon points="0 0, 10 4, 0 8" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <text x="800" y="48" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#0f172a">How Flint pays</text>
+  <text x="800" y="76" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="14" fill="#64748b">Work in. Signature in the middle. USDC and a receipt out.</text>
+
+  <!-- 1 Fund -->
+  <rect x="48" y="130" width="240" height="180" rx="16" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+  <circle cx="80" cy="162" r="14" fill="#0f172a"/>
+  <text x="80" y="167" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#ffffff">1</text>
+  <text x="168" y="210" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#0f172a">Fund escrow</text>
+  <text x="168" y="238" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#475569">USDC locked on Arc</text>
+
+  <line x1="300" y1="220" x2="348" y2="220" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 2 GitHub -->
+  <rect x="360" y="130" width="240" height="180" rx="16" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <circle cx="392" cy="162" r="14" fill="#1d4ed8"/>
+  <text x="392" y="167" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#ffffff">2</text>
+  <text x="480" y="210" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#0f172a">Ship on GitHub</text>
+  <text x="480" y="238" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#475569">PRs, reviews, issues</text>
+
+  <line x1="612" y1="220" x2="660" y2="220" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 3 TEE -->
+  <rect x="672" y="130" width="240" height="180" rx="16" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
+  <circle cx="704" cy="162" r="14" fill="#6d28d9"/>
+  <text x="704" y="167" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#ffffff">3</text>
+  <text x="792" y="210" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#0f172a">TEE scores</text>
+  <text x="792" y="238" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#475569">Only scores leave</text>
+
+  <line x1="924" y1="220" x2="972" y2="220" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 4 Sign -->
+  <rect x="984" y="130" width="240" height="180" rx="16" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <circle cx="1016" cy="162" r="14" fill="#0f172a"/>
+  <text x="1016" y="167" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#ffffff">4</text>
+  <text x="1104" y="210" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#0f172a">Maintainer signs</text>
+  <text x="1104" y="238" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#475569">One-click approval</text>
+
+  <line x1="1236" y1="220" x2="1284" y2="220" stroke="#334155" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- 5 Payout -->
+  <rect x="1296" y="130" width="256" height="180" rx="16" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5"/>
+  <circle cx="1328" cy="162" r="14" fill="#047857"/>
+  <text x="1328" y="167" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#ffffff">5</text>
+  <text x="1424" y="210" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="600" fill="#0f172a">Payout + receipt</text>
+  <text x="1424" y="238" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#475569">USDC + soulbound NFT</text>
+
+  <text x="800" y="380" text-anchor="middle" font-family="Inter, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#94a3b8">If the maintainer disappears: 14-day auto-release (grant) or 30-day reclaim (open)</text>
+</svg>

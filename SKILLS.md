@@ -218,11 +218,10 @@ Aug 2026   layer5/smp        621     330 USDC    0xdef...
 
 ## The One Animated Moment
 
-When waiting for Ledger device confirmation after clicking Approve Payout:
+When waiting for the maintainer's wallet confirmation after clicking Approve:
 
 ```
-button text changes to:  "Waiting for Ledger..."
-border pulses:           1px solid --accent, slow pulse animation
+button text changes to:  "Confirm in your wallet…"
 no spinner, no modal, no overlay
 ```
 

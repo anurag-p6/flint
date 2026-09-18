@@ -21865,37 +21865,31 @@ var DEFAULT_RESULT = {
 };
 function classifyPRComplexity(runtime2, apiKey, apiUrl, model, pr) {
   const body = JSON.stringify({
-    contents: [
-      {
-        parts: [
-          { text: SYSTEM_PROMPT },
-          { text: `
-
-Analyze this PR:
+    model,
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: `Analyze this PR:
 ${formatPRForAnalysis(pr)}` }
-        ]
-      }
     ],
-    generationConfig: {
-      responseMimeType: "application/json",
-      temperature: 0.1
-    }
+    temperature: 0.1,
+    response_format: { type: "json_object" }
   });
   const response = new cre.capabilities.HTTPClient().sendRequest(runtime2, {
-    url: `${apiUrl}/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    url: `${apiUrl}/chat/completions`,
     method: "POST",
     multiHeaders: {
-      "Content-Type": { values: ["application/json"] }
+      "Content-Type": { values: ["application/json"] },
+      Authorization: { values: [`Bearer ${apiKey}`] }
     },
     body: new TextEncoder().encode(body)
   }).result();
   if (!ok(response)) {
-    runtime2.log(`Gemini API failed: ${response.statusCode}, using default complexity`);
+    runtime2.log(`LLM API failed: ${response.statusCode}, using default complexity`);
     return DEFAULT_RESULT;
   }
   try {
     const parsed = JSON.parse(text(response));
-    const content = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+    const content = parsed.choices?.[0]?.message?.content;
     if (!content)
       return DEFAULT_RESULT;
     const result = JSON.parse(content);
@@ -22055,12 +22049,14 @@ var configSchema = exports_external.object({
   cycleDays: exports_external.number(),
   geminiApiUrl: exports_external.string(),
   geminiModel: exports_external.string(),
+  llmApiUrl: exports_external.string(),
+  llmModel: exports_external.string(),
   contributorMapping: exports_external.record(exports_external.string(), exports_external.string())
 });
 var onCronTrigger = (runtime2) => {
   const config = runtime2.config;
   const githubToken = runtime2.getSecret({ id: "GITHUB_TOKEN" }).result().value;
-  const geminiKey = runtime2.getSecret({ id: "GEMINI_API_KEY" }).result().value;
+  const llmKey = runtime2.getSecret({ id: "GROQ_API_KEY" }).result().value;
   const now = new Date;
   const sinceDate = new Date(now.getTime() - config.cycleDays * 24 * 60 * 60 * 1000);
   const since = sinceDate.toISOString();
@@ -22081,8 +22077,11 @@ var onCronTrigger = (runtime2) => {
     }).result();
     return "No PRs to score";
   }
-  const complexityResults = classifyAllPRs(runtime2, geminiKey, config.geminiApiUrl, config.geminiModel, prs);
+  const complexityResults = classifyAllPRs(runtime2, llmKey, config.llmApiUrl, config.llmModel, prs);
   runtime2.log(`Classified ${complexityResults.size} PRs`);
+  for (const [num2, r] of complexityResults) {
+    runtime2.log(`  PR #${num2}: ${r.complexity} — ${r.complexity_reason}`);
+  }
   const prsByAuthor = new Map;
   for (const pr of prs) {
     const complexity = complexityResults.get(pr.number)?.complexity ?? "medium";

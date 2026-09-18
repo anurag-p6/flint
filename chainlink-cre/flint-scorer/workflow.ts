@@ -27,6 +27,9 @@ export const configSchema = z.object({
 	geminiApiUrl: z.string(),
 	geminiModel: z.string(),
 
+	llmApiUrl: z.string(),
+	llmModel: z.string(),
+
 	contributorMapping: z.record(z.string(), z.string()),
 })
 export type Config = z.infer<typeof configSchema>
@@ -41,7 +44,7 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 	// ── Step 1: Fetch secrets inside the enclave ──
 	// Vault DON releases these only into an attested enclave.
 	const githubToken = runtime.getSecret({ id: 'GITHUB_TOKEN' }).result().value
-	const geminiKey = runtime.getSecret({ id: 'GEMINI_API_KEY' }).result().value
+	const llmKey = runtime.getSecret({ id: 'GROQ_API_KEY' }).result().value
 
 	// ── Step 2: Calculate scoring window ──
 	const now = new Date()
@@ -87,16 +90,19 @@ export const onCronTrigger = (runtime: TeeRuntime<Config>): string => {
 		return 'No PRs to score'
 	}
 
-	// ── Step 4: Classify PR complexity via Gemini (confidential HTTP inside TEE) ──
+	// ── Step 4: Classify PR complexity via Groq (confidential HTTP inside TEE) ──
 	// API key never leaves the enclave. LLM responses stay confidential.
 	const complexityResults = classifyAllPRs(
 		runtime,
-		geminiKey,
-		config.geminiApiUrl,
-		config.geminiModel,
+		llmKey,
+		config.llmApiUrl,
+		config.llmModel,
 		prs,
 	)
 	runtime.log(`Classified ${complexityResults.size} PRs`)
+	for (const [num, r] of complexityResults) {
+		runtime.log(`  PR #${num}: ${r.complexity} — ${r.complexity_reason}`)
+	}
 
 	// ── Step 5: Build scoring data structures ──
 	const prsByAuthor = new Map<string, { pr: typeof prs[0]; complexity: Complexity }[]>()

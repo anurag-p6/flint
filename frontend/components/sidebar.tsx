@@ -6,9 +6,10 @@ import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "Open Mode" },
   { href: "/grant", label: "Grants" },
   { href: "/network", label: "Network" },
+  { href: "/docs", label: "Documentation" },
 ]
 
 export function Sidebar() {

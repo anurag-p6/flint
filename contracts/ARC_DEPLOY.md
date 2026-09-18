@@ -177,3 +177,20 @@ first with `cre workflow simulate --broadcast` against the mock forwarder
    through the escrow/grant contract as the real flow does.
 4. Native gas uses **18-decimal** units (per Circle's chain definition), even
    though USDC the token is 6-decimal. Wagmi config reflects this.
+
+## 11. Grant pipeline live record (agentic loop)
+
+- Grant #0 on Arc: `setVerifier(deployer)` → approve → `createGrant`
+  (2 milestones, `source:`-tagged, 50/50, 30d/60d deadlines) → `verifyMilestone`
+  → EIP-191-signed `releaseTranche` — all `status 0x1`. Escrow leftover exactly
+  5/10 USDC, receipt SBT minted. Same signature flow the dashboard release
+  button uses (`frontend/lib/privy/grant.ts`).
+- Keeper dry-run against live state: finds grant #0, inherits the issue tag to
+  sibling milestones, attempts the GitHub fetch, skips with exact reason
+  (`issue-fetch-404` on the placeholder tag) — full detection chain, zero txs.
+- Forge: `contracts/test/FlintGrant.t.sol` 5/5 (validation, release flow,
+  wrong-signer, 14-day boundary via `vm.warp`, reclaim). Time logic proven
+  locally since the 14-day wait can't be demoed live.
+- Live-loop remainder (real issue → pending card → fund → merge PR → keeper
+  verify → UI release): needs the test-repo issue + `KEEPER_PRIVATE_KEY` +
+  webhook delivery. Record results here when run.
