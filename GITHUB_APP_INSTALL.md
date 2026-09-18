@@ -1,5 +1,10 @@
 # Flint GitHub App — Install-Only Repo Connection (Option A)
 
+> STATUS (Sept 2026): App-registration flow DEFERRED. The shipped build uses
+> PAT + webhook-secret auth (see `blocks/00-overview.md` and Block 03/05).
+> This doc is the production follow-up plan — kept as the reference for the
+> install-token migration. Nothing below is required for the current demo.
+
 > Dashboard shows repo info where the Flint GitHub App is installed. No OAuth login, no user sessions, no PAT paste. GitHub App installation flow only.
 
 ## 1. Why this option
@@ -8,7 +13,7 @@
 - The same App identity can answer "which repos am I installed on?" via installation tokens.
 - Dashboard needs repo-level data, not user-level data. No `Login with GitHub` required.
 - Claim/assign binds via `CONTRIBUTORS.md + FlintIdentity` (wallet mapping), not via OAuth token.
-- All GitHub writes (label, comment, assign) happen server-side with the installation token. User only signs on-chain txs (Ledger / wallet).
+- All GitHub writes (label, comment, assign) happen server-side with the installation token. User only signs on-chain txs from their wallet.
 
 If dashboard ever needs to act *as the user* (e.g. close issue as user), upgrade to OAuth (Option B). Until then, stay here.
 
@@ -187,7 +192,7 @@ Agent parses `<!-- flint: amount=300USDC deadline=2026-10-01 -->` footer or the 
 
 **Claim flow:** dashboard `Claim` button → checks `FlintIdentity.getWallet(githubUsername)` → tx binds wallet → backend sets GitHub assignee via installation token. First-claim-wins or maintainer-approves (lock this before build).
 
-**Verify flow:** `issues.closed as completed` + linked merged PR → verifier calls `FlintGrant.verifyMilestone` → dashboard shows `Verified ●` → `Approve Tranche` (Ledger) appears.
+**Verify flow:** `issues.closed as completed` + linked merged PR → verifier calls `FlintGrant.verifyMilestone` → dashboard shows `Verified ●` → `Approve Tranche` (Privy signer) appears.
 
 ## 7. Dashboard wiring (flint-ui)
 

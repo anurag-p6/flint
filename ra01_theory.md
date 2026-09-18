@@ -1,7 +1,7 @@
 # RA01 — Research: Open-Source Contributor Reputation Systems & Disbursement Alternatives
 
 **Date:** 2026-09-10
-**Track:** ETHOnline 2026 — Ledger Track (AI Agents x Ledger)
+**Track:** ETHOnline 2026 — Privy Track (Best B2B financial product / Best financial flow)
 **Status:** Research Complete
 **Source:** ChatGPT-4o +公开文档 + Reddit (r/ETHGlobal + r/SFA + r/vim)
 **Methodology:** Cross-source triangulation, gap analysis, hackathon fit evaluation
@@ -45,7 +45,7 @@ Identify existing OSS compensation/reputation systems at ETHGlobal or broadly to
 
 **ETHOnline 2026 sponsors (tracked):**
 - The Graph $15K (open-source indexing tooling)
-- Ledger $5K (hardware signing + AI agents)
+- Privy $2.5K x2 (embedded wallets + B2B financial flows)
 - Chainlink $3K (CRE confidential workflows)
 - Supported but not core: World (agent identity), ENS (subnames), Privy (B2B auth), Bazantic
 
@@ -66,7 +66,7 @@ Identify existing OSS compensation/reputation systems at ETHGlobal or broadly to
 | Matrix vs Flint | Global weighted scoring + LLL; Flint = GitHub-specific composite score | Foundational work; Flint = operator-layer on top |
 
 **Difference Summary:**
-- SourceCred is a reputation protocol Flint is a trustless disbursement layer on top of reputation (scoped scoring + Ledger approval + ERC-5484)
+- SourceCred is a reputation protocol Flint is a trustless disbursement layer on top of reputation (scoped scoring + approver signature + ERC-5484)
 - SourceCred requires foreign repos → mik's legacy Flint only needs GitHub
 - SourceCred doesn't solve specific pain of grant programs Flint combines grant mode + OSS open mode
 
@@ -76,12 +76,12 @@ Identify existing OSS compensation/reputation systems at ETHGlobal or broadly to
 |---|------|---|
 | Ecosystem | GenLayer Builder Portal (Web2 AI) | Different stack |
 | Open Source link | GitHub YoneCode/GitDrip, but hackathon entry never | Never submitted to ETHGlobal |
-| Key feature | AI validator network (simulated trust) | Flint prefers CRE + hardware trust |
-| Trust layer | GenLayer validators (unknown) | Flint = TEE + Ledger |
+| Key feature | AI validator network (simulated trust) | Flint prefers CRE + signature trust |
+| Trust layer | GenLayer validators (unknown) | Flint = TEE + approver signature |
 
 **Positioning against Flint:**
-- GitDrip = AI hydra Flint = AI-in-TEE + hardware gate
-- GitDrip claims decentralized trust Flint claims verified trust via Chainlink + Leydger
+- GitDrip = AI hydra Flint = AI-in-TEE + signature gate
+- GitDrip claims decentralized trust Flint claims verified trust via Chainlink + approver signature
 
 ### 3.3 Coordinape (Yearn internal, 2021)
 
@@ -135,7 +135,7 @@ Identify existing OSS compensation/reputation systems at ETHGlobal or broadly to
 |---|---|---|
 | Problem | Real (late-afternoon pitch: maintainer manually calculates fairness in spreadsheets) | Judges relate |
 | Solution depth | 6-day road (homemade scoring) | Trade-off clear |
-| Demo moment | Ledger lights up, hands on camera | Cinematic, memorable |
+| Demo moment | Maintainer approves on camera with one click from an email wallet | Cinematic, memorable |
 | Differentiator table (vs SourceCred + GitDrip + Disperse) | Flint wins +1 column per row | Judges will read it |
 | Intellectual property (OREA principles) | O vs. С both aligned to hackathon value | Fake payoff (no repo) hurts A, is fixable |
 
@@ -165,10 +165,10 @@ Identify existing OSS compensation/reputation systems at ETHGlobal or broadly to
 ### RA01 Practical Takeaways
 
 1. Pitch angle: Not tool for GSoC, but on-chain OSS reputation primitive GitHub today, every platform tomorrow
-2. Hackathon tactic: Problem rating 8/10: Maintainer manually computes payouts in Spreadsheets, uses Google Forms for wallet collection Sends USDC via bank transfers (Global South burden) Flint removes that person, uses Ledger-k把关
+2. Hackathon tactic: Problem rating 8/10: Maintainer manually computes payouts in Spreadsheets, uses Google Forms for wallet collection Sends USDC via bank transfers (Global South burden) Flint removes that person — email login creates payout wallets, one signature releases funds
 3. Differentiation: All existing tools are execution (payments, rollover, streaming) Flint is fairness mechanism + trust bridge
-4. Sponsor slam: Flint is a perfect fit for Ledger $5K (hardware signing, agent funnel), The Graph $15K (custom Graph indexer), and Chainlink $3K (TEE confidential scoring)
-5. Continuity: If any earlier version of Flint existed e.g. personal SaaS for one grant, frame it as Continuity for The Graph and Ledger tracks
+4. Sponsor slam: Flint is a perfect fit for Privy $2.5K x2 (embedded wallets, B2B financial flows), The Graph $15K (custom Graph indexer), and Chainlink $3K (TEE confidential scoring)
+5. Continuity: If any earlier version of Flint existed e.g. personal SaaS for one grant, frame it as Continuity for The Graph and Privy tracks
 
 ---
 
