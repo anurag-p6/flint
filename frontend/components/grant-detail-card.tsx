@@ -225,7 +225,7 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
   const passes = scoreShown !== null && scoreShown >= threshold
 
   return (
-    <div className="border border-gray-100 rounded-md p-5 space-y-5 bg-white">
+    <div className="border border-border rounded-md p-5 space-y-5 bg-surface">
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
@@ -240,26 +240,26 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
               onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
             />
           ) : (
-            <span className="w-11 h-11 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-[15px] font-medium shrink-0">
+            <span className="w-11 h-11 rounded-full bg-surface-muted text-text-muted flex items-center justify-center text-[15px] font-medium shrink-0">
               {(login ?? "GR").slice(0, 2).toUpperCase()}
             </span>
           )}
           <div className="min-w-0">
-            <p className="text-[11px] text-gray-400 uppercase tracking-wider font-mono">
+            <p className="text-[11px] text-text-muted uppercase tracking-wider font-mono">
               Grant #{grantId.toString()}
               {funded ? ` · issue #${funded.issueNumber}` : ""}
             </p>
-            <p className="text-[16px] font-medium text-black truncate">
+            <p className="text-[16px] font-medium text-text-primary truncate">
               {funded?.title ?? `Grant #${grantId.toString()}`}
             </p>
-            <p className="text-[12px] text-gray-400 font-mono truncate">
+            <p className="text-[12px] text-text-muted font-mono truncate">
               {login ?? truncateAddress(grantee)} · {chainMilestones.length} milestones
             </p>
           </div>
         </div>
         <span
           className={`text-[11px] font-medium px-2.5 py-1 rounded-full shrink-0 ${
-            completed ? "bg-green text-white" : amountPaid > 0n ? "bg-accent text-white" : "bg-gray-100 text-gray-700"
+            completed ? "bg-green text-white" : amountPaid > 0n ? "bg-accent text-white" : "bg-surface-muted text-text-secondary"
           }`}
         >
           {completed ? "Completed" : amountPaid > 0n ? "In progress" : "Funded — awaiting work"}
@@ -272,36 +272,36 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
           href={funded.issueUrl ?? `https://github.com/${repo}/issues/${funded.issueNumber}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-[13px] text-gray-700 hover:text-accent transition-colors"
+          className="flex items-center gap-2 text-[13px] text-text-secondary hover:text-accent transition-colors"
         >
-          <Image src="/github.svg" alt="GitHub" width={16} height={16} className="shrink-0" />
+          <Image src="/github.svg" alt="GitHub" width={16} height={16} className="shrink-0 dark:invert" />
           <span className="truncate">{funded.title}</span>
-          <span className="text-[11px] text-gray-400 font-mono shrink-0">#{funded.issueNumber}</span>
+          <span className="text-[11px] text-text-muted font-mono shrink-0">#{funded.issueNumber}</span>
         </a>
       )}
 
       {/* Score above the graph */}
-      <div className="flex items-center gap-4 border border-gray-100 rounded-md px-4 py-3">
+      <div className="flex items-center gap-4 border border-border rounded-md px-4 py-3 flex-wrap">
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider">Agent score</p>
-          <p className="text-[24px] text-black font-medium tnum leading-tight">
+          <p className="text-[10px] text-text-muted uppercase tracking-wider">Agent score</p>
+          <p className="text-[24px] text-text-primary font-medium tnum leading-tight">
             {scoreShown === null ? "—" : scoreShown.toFixed(1)}
           </p>
         </div>
-        <div className="w-px self-stretch bg-gray-100" />
+        <div className="w-px self-stretch bg-surface-muted" />
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider">Release gate</p>
-          <p className="text-[24px] text-black font-medium tnum leading-tight">{threshold}</p>
+          <p className="text-[10px] text-text-muted uppercase tracking-wider">Release gate</p>
+          <p className="text-[24px] text-text-primary font-medium tnum leading-tight">{threshold}</p>
         </div>
         <div className="ml-auto text-right">
           {scoreShown === null ? (
-            <p className="text-[12px] text-gray-400">Awaiting merged PR — agent scores on merge</p>
+            <p className="text-[12px] text-text-muted">Awaiting merged PR — agent scores on merge</p>
           ) : passes ? (
             <p className="text-[13px] font-medium text-green">CLEAR — releasable on verify ✓</p>
           ) : (
             <p className="text-[13px] font-medium text-amber">HELD — below gate, funds stay locked</p>
           )}
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <p className="text-[11px] text-text-muted mt-0.5">
             Agent scores the merged work, then the keeper unlocks Release
           </p>
         </div>
@@ -310,22 +310,22 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
       {/* Race board */}
       <div>
         <div className="flex items-center justify-between mb-1.5">
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider">Goal board</p>
-          <p className="text-[11px] text-gray-400 font-mono tnum">
+          <p className="text-[10px] text-text-muted uppercase tracking-wider">Goal board</p>
+          <p className="text-[11px] text-text-muted font-mono tnum">
             {(Number(amountPaid) / 1e6).toLocaleString()} / {(Number(totalAmount) / 1e6).toLocaleString()} USDC
           </p>
         </div>
-        <div className="relative h-16 bg-gray-50 rounded-md overflow-hidden">
+        <div className="relative h-16 bg-surface-muted rounded-md overflow-hidden">
           {/* milestone posts */}
           {chainMilestones.map((m, i) => {
             const st = Number(m.status ?? m[3] ?? 0)
             const left = `${((i + 1) / (chainMilestones.length + 1)) * 100}%`
             return (
               <div key={i} className="absolute top-0 bottom-0" style={{ left }} title={`M${i + 1}`}>
-                <div className={`w-px h-full ${st >= 2 ? "bg-green" : st === 1 ? "bg-amber" : "bg-gray-100"}`} />
+                <div className={`w-px h-full ${st >= 2 ? "bg-green" : st === 1 ? "bg-amber" : "bg-surface-muted"}`} />
                 <span
                   className={`absolute -translate-x-1/2 top-1 text-[9px] font-mono px-1 rounded ${
-                    st >= 2 ? "bg-green text-white" : st === 1 ? "bg-amber text-white" : "bg-gray-100 text-gray-400"
+                    st >= 2 ? "bg-green text-white" : st === 1 ? "bg-amber text-white" : "bg-surface-muted text-text-muted"
                   }`}
                 >
                   M{i + 1}
@@ -334,7 +334,7 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
             )
           })}
           {/* track line */}
-          <div className="absolute left-3 right-3 top-1/2 h-0.5 bg-gray-100 -translate-y-1/2" />
+          <div className="absolute left-3 right-3 top-1/2 h-0.5 bg-surface-muted -translate-y-1/2" />
           <div
             className="absolute left-3 top-1/2 h-0.5 bg-accent -translate-y-1/2 transition-all"
             style={{ width: `calc(${pct * 100}% * 0.96)` }}
@@ -356,7 +356,7 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
                 onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
               />
             ) : (
-              <span className="block w-[30px] h-[30px] rounded-full bg-black text-white text-[11px] font-medium flex items-center justify-center">
+              <span className="block w-[30px] h-[30px] rounded-full bg-text-primary text-surface text-[11px] font-medium flex items-center justify-center">
                 {(login ?? "GR").slice(0, 2).toUpperCase()}
               </span>
             )}
@@ -370,7 +370,7 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
 
       {/* Progress over days */}
       <div>
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">Approach · PRs over days</p>
+        <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1.5">Approach · PRs over days</p>
         <ProgressGraph
           curve={curve}
           prPoints={prPoints}
@@ -385,10 +385,10 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
 
       {/* Money trail */}
       <div>
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-1.5">Money trail</p>
-        <div className="border border-gray-100 rounded-md overflow-hidden">
+        <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1.5">Money trail</p>
+        <div className="border border-border rounded-md overflow-hidden">
           <TrailRow
-            dot="bg-black"
+            dot="bg-text-primary"
             label={`Grant created · ${(Number(totalAmount) / 1e6).toLocaleString()} USDC escrowed`}
             meta={createdAt ? fmtDate(createdAt) : ""}
             href={addressUrl(addresses.grant)}
@@ -411,7 +411,7 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
           {tranches.map((t) => (
             <TrailRow
               key={t.id}
-              dot={t.auto ? "bg-gray-400" : "bg-green"}
+              dot={t.auto ? "bg-border" : "bg-green"}
               label={`${t.auto ? "Auto-released" : "Released"} · milestone ${Number(t.milestoneId) + 1} · ${(Number(t.amount) / 1e6).toLocaleString()} USDC`}
               meta={fmtDate(Number(t.timestamp))}
               href={txUrl(txFromId(t.id))}
@@ -419,7 +419,7 @@ export function GrantDetailCard({ grantId, repo }: { grantId: bigint; repo: stri
             />
           ))}
           {!subgraphOk && (
-            <p className="px-4 py-2.5 text-[11px] text-gray-400">
+            <p className="px-4 py-2.5 text-[11px] text-text-muted">
               Release transactions appear here once the subgraph endpoint is configured.
             </p>
           )}
@@ -443,10 +443,10 @@ function TrailRow({
   linkLabel: string
 }) {
   return (
-    <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-gray-50 last:border-b-0">
+    <div className="flex items-center gap-2.5 px-4 py-2.5 border-b border-border last:border-b-0">
       <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
-      <p className="text-[12px] text-gray-700 truncate">{label}</p>
-      <span className="ml-auto text-[11px] text-gray-400 font-mono shrink-0">{meta}</span>
+      <p className="text-[12px] text-text-secondary truncate">{label}</p>
+      <span className="ml-auto text-[11px] text-text-muted font-mono shrink-0">{meta}</span>
       <a
         href={href}
         target="_blank"
@@ -492,13 +492,13 @@ function ProgressGraph({
         ` L ${X(end).toFixed(1)} ${Y(curve[curve.length - 1].frac).toFixed(1)}`
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full block border border-gray-100 rounded-md bg-white">
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full block border border-border rounded-md bg-surface">
       {/* axis */}
-      <line x1={P.l} y1={baseY} x2={W - P.r} y2={baseY} className="stroke-gray-100" strokeWidth={1} />
-      <text x={P.l} y={H - 6} className="fill-gray-400" fontSize={10}>
+      <line x1={P.l} y1={baseY} x2={W - P.r} y2={baseY} className="stroke-border" strokeWidth={1} />
+      <text x={P.l} y={H - 6} className="fill-text-muted" fontSize={10}>
         {fmtDay(start)}
       </text>
-      <text x={W - P.r} y={H - 6} textAnchor="end" className="fill-gray-400" fontSize={10}>
+      <text x={W - P.r} y={H - 6} textAnchor="end" className="fill-text-muted" fontSize={10}>
         today
       </text>
       {/* merged curve */}
@@ -514,12 +514,12 @@ function ProgressGraph({
               cx={X(at)}
               cy={p.mergedAt ? y : baseY - 52}
               r={5}
-              className={p.mergedAt ? "fill-accent" : "fill-white stroke-gray-400"}
+              className={p.mergedAt ? "fill-accent" : "fill-surface stroke-text-muted"}
               strokeWidth={p.mergedAt ? 0 : 1.5}
             >
               <title>PR #{p.n} {p.mergedAt ? "merged" : "open"}</title>
             </circle>
-            <text x={X(at)} y={(p.mergedAt ? y : baseY - 52) - 9} textAnchor="middle" className="fill-gray-400" fontSize={9}>
+            <text x={X(at)} y={(p.mergedAt ? y : baseY - 52) - 9} textAnchor="middle" className="fill-text-muted" fontSize={9}>
               #{p.n}
             </text>
           </g>

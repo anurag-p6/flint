@@ -23,17 +23,17 @@ function Row({
     <button
       onClick={onClick}
       disabled={disabled || busy}
-      className="w-full flex items-center gap-3 px-4 py-3 rounded-md border border-gray-100 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:hover:border-gray-100 text-left"
+      className="w-full flex items-center gap-3 px-4 py-3 rounded-md border border-border hover:border-text-muted transition-colors disabled:opacity-50 disabled:hover:border-border text-left"
     >
       <span className="w-6 h-6 shrink-0 flex items-center justify-center">
-        {icon ?? <span className="w-2 h-2 rounded-full bg-gray-300" />}
+        {icon ?? <span className="w-2 h-2 rounded-full bg-border" />}
       </span>
       <span className="flex-1 min-w-0">
-        <span className="block text-[13px] font-medium text-black">
+        <span className="block text-[13px] font-medium text-text-primary">
           {busy ? "Waiting…" : title}
         </span>
         {subtitle && (
-          <span className="block text-[11px] text-gray-400 truncate">{subtitle}</span>
+          <span className="block text-[11px] text-text-muted truncate">{subtitle}</span>
         )}
       </span>
     </button>
@@ -69,14 +69,14 @@ export function ConnectWalletDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[380px] bg-white rounded-md border border-gray-100 p-4 space-y-2"
+        className="w-full max-w-[380px] bg-surface rounded-md border border-border p-4 space-y-2"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-1 pb-1">
-          <p className="text-[14px] font-semibold text-black">Connect wallet</p>
+          <p className="text-[14px] font-semibold text-text-primary">Connect wallet</p>
           <button
             onClick={onClose}
-            className="text-[12px] text-gray-400 hover:text-gray-700 transition-colors"
+            className="text-[12px] text-text-muted hover:text-text-secondary transition-colors"
           >
             Close
           </button>
@@ -89,11 +89,11 @@ export function ConnectWalletDialog({
           onClick={() => {}}
         />
 
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider px-1 pt-2">
+        <p className="text-[10px] text-text-muted uppercase tracking-wider px-1 pt-2">
           Browser wallets
         </p>
         {browserWallets.length === 0 && (
-          <p className="text-[12px] text-gray-400 px-1">
+          <p className="text-[12px] text-text-muted px-1">
             No browser wallet detected. Install MetaMask or Rabby.
           </p>
         )}
@@ -113,7 +113,7 @@ export function ConnectWalletDialog({
           />
         ))}
 
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider px-1 pt-2">
+        <p className="text-[10px] text-text-muted uppercase tracking-wider px-1 pt-2">
           Mobile
         </p>
         {qrConnector ? (
@@ -137,7 +137,7 @@ export function ConnectWalletDialog({
         )}
 
         {(error || isPending) && (
-          <p className="text-[12px] text-gray-400 px-1 pt-1">
+          <p className="text-[12px] text-text-muted px-1 pt-1">
             {error ? "Connection failed — try another option." : "Confirm in your wallet…"}
           </p>
         )}

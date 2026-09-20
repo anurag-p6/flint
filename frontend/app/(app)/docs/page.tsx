@@ -47,20 +47,20 @@ function CopyBlock({ title, body, hint }: { title: string; body: string; hint: s
     setTimeout(() => setCopied(false), 1500)
   }
   return (
-    <div className="border border-gray-100 rounded-md overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 bg-gray-50">
-        <p className="text-[11px] text-gray-400 uppercase tracking-wider">{title}</p>
+    <div className="border border-border rounded-md overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-surface-muted">
+        <p className="text-[11px] text-text-muted uppercase tracking-wider">{title}</p>
         <button
           onClick={copy}
-          className="text-[12px] font-medium text-gray-700 hover:text-black transition-colors"
+          className="text-[12px] font-medium text-text-secondary hover:text-text-primary transition-colors"
         >
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="px-4 py-3 text-[12px] text-gray-700 font-mono whitespace-pre overflow-x-auto">
+      <pre className="px-4 py-3 text-[12px] text-text-secondary font-mono whitespace-pre overflow-x-auto">
         {body}
       </pre>
-      <p className="px-4 pb-3 text-[11px] text-gray-400">{hint}</p>
+      <p className="px-4 pb-3 text-[11px] text-text-muted">{hint}</p>
     </div>
   )
 }
@@ -68,23 +68,23 @@ function CopyBlock({ title, body, hint }: { title: string; body: string; hint: s
 export default function DocsPage() {
   return (
     <div className="space-y-8">
-      <h1 className="text-[22px] font-semibold text-black">Documentation</h1>
+      <h1 className="text-[22px] font-semibold text-text-primary">Documentation</h1>
 
       <div className="space-y-3">
-        <p className="text-[11px] text-gray-400 uppercase tracking-wider">How it works</p>
+        <p className="text-[11px] text-text-muted uppercase tracking-wider">How it works</p>
         {STEPS.map((s) => (
           <div key={s.n} className="flex items-start gap-3">
-            <span className="text-[11px] text-gray-400 font-mono pt-0.5">{s.n}</span>
+            <span className="text-[11px] text-text-muted font-mono pt-0.5">{s.n}</span>
             <div>
-              <span className="text-[13px] text-gray-700 font-medium">{s.title}. </span>
-              <span className="text-[13px] text-gray-500">{s.text}</span>
+              <span className="text-[13px] text-text-secondary font-medium">{s.title}. </span>
+              <span className="text-[13px] text-text-secondary">{s.text}</span>
             </div>
           </div>
         ))}
       </div>
 
       <div className="space-y-3">
-        <p className="text-[11px] text-gray-400 uppercase tracking-wider">Issue template</p>
+        <p className="text-[11px] text-text-muted uppercase tracking-wider">Issue template</p>
         <CopyBlock
           title="flint issue body"
           body={SAMPLE_ISSUE}
@@ -93,7 +93,7 @@ export default function DocsPage() {
       </div>
 
       <div className="space-y-3">
-        <p className="text-[11px] text-gray-400 uppercase tracking-wider">CONTRIBUTORS.md</p>
+        <p className="text-[11px] text-text-muted uppercase tracking-wider">CONTRIBUTORS.md</p>
         <CopyBlock
           title="repo root file"
           body={SAMPLE_CONTRIBUTORS}

@@ -55,8 +55,8 @@ export function PaymentProgress({
   const failed = stage === "error";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-[2px]">
-      <div className="w-full max-w-[340px] mx-4 border border-gray-100 rounded-md bg-white px-6 py-7 shadow-[0_8px_32px_rgba(10,10,10,0.06)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-surface/80 backdrop-blur-[2px]">
+      <div className="w-full max-w-[340px] mx-4 border border-border rounded-md bg-surface px-6 py-7 shadow-[0_8px_32px_rgba(10,10,10,0.06)]">
         <div className="flex flex-col items-center text-center">
           {done ? (
             <span className="relative flex h-11 w-11 items-center justify-center">
@@ -71,19 +71,19 @@ export function PaymentProgress({
             </span>
           ) : (
             <span className="relative flex h-11 w-11 items-center justify-center">
-              <span className="absolute inset-0 rounded-full border border-gray-100" />
-              <span className="h-11 w-11 rounded-full border-[1.5px] border-gray-100 border-t-accent animate-spin" />
+              <span className="absolute inset-0 rounded-full border border-border" />
+              <span className="h-11 w-11 rounded-full border-[1.5px] border-border border-t-accent animate-spin" />
             </span>
           )}
 
-          <p className="mt-4 text-[15px] font-medium text-black">
+          <p className="mt-4 text-[15px] font-medium text-text-primary">
             {done
               ? "Payment complete"
               : failed
                 ? "Payment failed"
                 : "Processing payment"}
           </p>
-          <p className="mt-1 text-[13px] text-gray-400">
+          <p className="mt-1 text-[13px] text-text-muted">
             {amountLabel} USDC · {payeeCount} contributor{payeeCount === 1 ? "" : "s"}
           </p>
         </div>
@@ -99,14 +99,14 @@ export function PaymentProgress({
                       ? "w-1.5 h-1.5 rounded-full bg-green shrink-0"
                       : state === "active"
                         ? "w-1.5 h-1.5 rounded-full bg-accent shrink-0 animate-pulse"
-                        : "w-1.5 h-1.5 rounded-full bg-gray-100 shrink-0"
+                        : "w-1.5 h-1.5 rounded-full bg-border shrink-0"
                   }
                 />
                 <span
                   className={
                     state === "todo"
-                      ? "text-[12px] text-gray-400"
-                      : "text-[12px] text-gray-700"
+                      ? "text-[12px] text-text-muted"
+                      : "text-[12px] text-text-secondary"
                   }
                 >
                   {s.label}

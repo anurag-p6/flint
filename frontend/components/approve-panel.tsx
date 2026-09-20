@@ -149,26 +149,26 @@ export function ApprovePanel({
           : payAllLabel;
 
   return (
-    <div className="border border-gray-100 rounded-md px-5 py-4 space-y-4">
+    <div className="border border-border rounded-md px-5 py-4 space-y-4">
       <div>
-        <p className="text-[13px] text-black font-medium">
+        <p className="text-[13px] text-text-primary font-medium">
           Paying {rows.length} contributor{rows.length === 1 ? "" : "s"}
         </p>
         <div className="mt-2 space-y-1">
           {rows.map((r) => (
             <div key={r.contributor} className="flex items-center justify-between text-[13px]">
-              <span className="font-mono text-gray-700">{formatUSDC(r.payout)} USDC</span>
-              <span className="text-gray-400">→</span>
-              <span className="text-gray-700">
+              <span className="font-mono text-text-secondary">{formatUSDC(r.payout)} USDC</span>
+              <span className="text-text-muted">→</span>
+              <span className="text-text-secondary">
                 {usernameFor(r.contributor) ?? truncateAddress(r.contributor)}
               </span>
             </div>
           ))}
         </div>
-        <p className="text-[11px] text-gray-400 font-mono mt-2">
+        <p className="text-[11px] text-text-muted font-mono mt-2">
           Total {formatUSDC(totalAmount)} USDC · {policyLabel(policy)} policy
         </p>
-        <p className="text-[11px] text-gray-400 mt-1">
+        <p className="text-[11px] text-text-muted mt-1">
           Only CONTRIBUTORS.md wallets are scored and paid — the split stays between them.
         </p>
       </div>
@@ -179,7 +179,7 @@ export function ApprovePanel({
           Wallet not connected — connect to sign this payout. No funds move until you do.
         </p>
       ) : signerMatches ? (
-        <p className="flex items-center gap-1.5 text-[12px] text-gray-700">
+        <p className="flex items-center gap-1.5 text-[12px] text-text-secondary">
           <span className="w-1.5 h-1.5 rounded-full bg-green" />
           Signing as registered approver {truncateAddress(signer)}
         </p>
@@ -201,7 +201,7 @@ export function ApprovePanel({
 
       {phase === "error" && error && <p className="text-[12px] text-red">{error}</p>}
       {phase === "success" && txHash && (
-        <p className="text-[12px] text-gray-700">
+        <p className="text-[12px] text-text-secondary">
           Payout submitted.{" "}
           <TxLink hash={txHash} className="text-accent hover:underline font-mono" />
         </p>

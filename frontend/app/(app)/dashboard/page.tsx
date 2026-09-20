@@ -44,16 +44,16 @@ function StatusDot({ status, size = "default" }: { status: string; size?: "defau
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className={`${dotSize} rounded-full ${color}`} />
-      <span className={`${size === "sm" ? "text-[11px]" : "text-[13px]"} text-gray-700`}>{status}</span>
+      <span className={`${size === "sm" ? "text-[11px]" : "text-[13px]"} text-text-secondary`}>{status}</span>
     </span>
   )
 }
 
 function MetricCard({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="border border-gray-100 rounded-md px-4 py-3">
-      <p className="text-[11px] text-gray-400 uppercase tracking-wider">{label}</p>
-      <p className={`text-[18px] text-black font-medium mt-1 ${mono ? "font-mono text-[15px]" : ""}`}>{value}</p>
+    <div className="border border-border rounded-md px-4 py-3">
+      <p className="text-[11px] text-text-muted uppercase tracking-wider">{label}</p>
+      <p className={`text-[18px] text-text-primary font-medium mt-1 ${mono ? "font-mono text-[15px]" : ""}`}>{value}</p>
     </div>
   )
 }
@@ -271,25 +271,25 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-3">
-          <h1 className="text-[22px] font-semibold text-black">Open Mode</h1>
+          <h1 className="text-[22px] font-semibold text-text-primary">Open Mode</h1>
           <RepoSwitcher />
         </div>
         {connectedRepo && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <a
               href={`https://github.com/${connectedRepo}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1.5 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+              className="px-3 py-1.5 text-[12px] font-medium text-text-secondary border border-border rounded-md hover:border-text-muted transition-colors"
             >
               View on GitHub
             </a>
             <button
               type="button"
               onClick={() => setBridgeOpen(true)}
-              className="px-3 py-1.5 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+              className="px-3 py-1.5 text-[12px] font-medium text-text-secondary border border-border rounded-md hover:border-text-muted transition-colors"
             >
               Bridge to Arc
             </button>
@@ -301,13 +301,13 @@ export default function DashboardPage() {
       {/* No repo selected */}
       {!connectedRepo && (
         <div className="space-y-6 pt-2">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <MetricCard label="Escrow contract" value={truncateAddress(addresses.escrow)} mono />
             <MetricCard label="Token" value="USDC" />
             <MetricCard label="Payout policy" value="Fixed · Square root · Proportional" />
           </div>
-          <div className="border-t border-gray-100 pt-6">
-            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-4">How it works</p>
+          <div className="border-t border-border pt-6">
+            <p className="text-[11px] text-text-muted uppercase tracking-wider mb-4">How it works</p>
             <div className="space-y-3">
               {[
                 { step: "01", text: "Maintainer deposits USDC into a reward pool for the repo" },
@@ -317,8 +317,8 @@ export default function DashboardPage() {
                 { step: "05", text: "USDC distributed automatically based on agent scores" },
               ].map((s) => (
                 <div key={s.step} className="flex items-start gap-3">
-                  <span className="text-[11px] text-gray-400 font-mono pt-0.5">{s.step}</span>
-                  <span className="text-[13px] text-gray-700">{s.text}</span>
+                  <span className="text-[11px] text-text-muted font-mono pt-0.5">{s.step}</span>
+                  <span className="text-[13px] text-text-secondary">{s.text}</span>
                 </div>
               ))}
             </div>
@@ -341,17 +341,17 @@ export default function DashboardPage() {
           {/* Pool metrics */}
           {hasPool && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-4">
-                  <span className="text-[13px] text-gray-400">Pool: {formatPoolAmount(totalAmount)}</span>
-                  <span className="text-[13px] text-gray-400">{policyLabel(poolPolicy)}</span>
+                  <span className="text-[13px] text-text-muted">Pool: {formatPoolAmount(totalAmount)}</span>
+                  <span className="text-[13px] text-text-muted">{policyLabel(poolPolicy)}</span>
                   <StatusDot status={status === "ScoresSubmitted" ? "Scores submitted" : status!} />
                   {lastPayoutHash && (
                     <TxLink hash={lastPayoutHash} />
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard label="Contributors" value={ghContributors.length.toString()} />
                 <MetricCard label="Total pool" value={formatPoolAmount(totalAmount)} />
                 <MetricCard label="Status" value={status === "ScoresSubmitted" ? "Scores submitted" : status!} />
@@ -366,7 +366,7 @@ export default function DashboardPage() {
                   {scorerState === "running" ? "Scoring..." : scorerState === "done" ? "Scored" : "Run Scorer Agent"}
                 </button>
                 {scorerMsg && (
-                  <span className={`text-[12px] ${scorerState === "error" ? "text-red" : "text-gray-500"}`}>
+                  <span className={`text-[12px] ${scorerState === "error" ? "text-red" : "text-text-secondary"}`}>
                     {scorerMsg}
                     {scorerTxHash && scorerState !== "error" && (
                       <>
@@ -408,11 +408,11 @@ export default function DashboardPage() {
             <div className="border border-amber rounded-md px-4 py-3 flex items-start gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
               <div>
-                <p className="text-[13px] text-gray-700 font-medium">CONTRIBUTORS.md not found</p>
-                <p className="text-[12px] text-gray-400 mt-0.5">
+                <p className="text-[13px] text-text-secondary font-medium">CONTRIBUTORS.md not found</p>
+                <p className="text-[12px] text-text-muted mt-0.5">
                   Contributors must add their wallet address to <span className="font-mono">CONTRIBUTORS.md</span> in the repo root for disbursement.
                 </p>
-                <p className="text-[11px] text-gray-400 font-mono mt-2 bg-gray-50 px-2 py-1.5 rounded">
+                <p className="text-[11px] text-text-muted font-mono mt-2 bg-surface-muted px-2 py-1.5 rounded">
                   | @username | 0xYourWalletAddress |
                 </p>
               </div>
@@ -424,13 +424,13 @@ export default function DashboardPage() {
             <div className="border border-amber rounded-md px-4 py-3 flex items-start gap-3">
               <span className="w-1.5 h-1.5 rounded-full bg-amber mt-1.5 shrink-0" />
               <div>
-                <p className="text-[13px] text-gray-700 font-medium">
+                <p className="text-[13px] text-text-secondary font-medium">
                   {unmappedScored.length} scored wallet{unmappedScored.length === 1 ? " is" : "s are"} not in CONTRIBUTORS.md
                 </p>
-                <p className="text-[12px] text-gray-400 mt-0.5 font-mono">
+                <p className="text-[12px] text-text-muted mt-0.5 font-mono">
                   {unmappedScored.map((s: any) => truncateAddress(s.contributor as string)).join(", ")}
                 </p>
-                <p className="text-[12px] text-gray-400 mt-0.5">
+                <p className="text-[12px] text-text-muted mt-0.5">
                   They will be paid on approval. Ask them to register, or re-run scoring after updating the mapping.
                 </p>
               </div>
@@ -438,7 +438,7 @@ export default function DashboardPage() {
           )}
 
           {!hasPool && scorerMsg && (
-            <p className={`text-[12px] ${scorerState === "error" ? "text-red" : "text-gray-500"}`}>
+            <p className={`text-[12px] ${scorerState === "error" ? "text-red" : "text-text-secondary"}`}>
               {scorerState === "running" ? "Scoring PRs, commits, and issues…" : scorerMsg}
               {scorerTxHash && scorerState !== "error" && (
                 <>
@@ -451,7 +451,7 @@ export default function DashboardPage() {
 
           {/* Eligible table: registered wallets only — this is the pay-all set */}
           {ghLoading ? (
-            <p className="text-[13px] text-gray-400">Loading contributors...</p>
+            <p className="text-[13px] text-text-muted">Loading contributors...</p>
           ) : eligibleContributors.length > 0 ? (
             <ContributorsTable
               contributors={eligibleContributors}
@@ -462,7 +462,7 @@ export default function DashboardPage() {
               hasScores={onChainScores.length > 0 || Object.keys(previewScores).length > 0}
             />
           ) : (
-            <p className="text-[13px] text-gray-400">
+            <p className="text-[13px] text-text-muted">
               No eligible contributors — wallets appear here once added to CONTRIBUTORS.md.
             </p>
           )}
@@ -497,8 +497,8 @@ function CreatePoolForm({
 
   if (!wallet) {
     return (
-      <div className="border border-gray-100 rounded-md p-4">
-        <p className="text-[13px] text-gray-400">Connect your wallet to create a reward pool.</p>
+      <div className="border border-border rounded-md p-4">
+        <p className="text-[13px] text-text-muted">Connect your wallet to create a reward pool.</p>
       </div>
     )
   }
@@ -552,52 +552,52 @@ function CreatePoolForm({
   }
 
   return (
-    <div className="border border-gray-100 rounded-md p-4 space-y-4">
+    <div className="border border-border rounded-md p-4 space-y-4">
       <div>
-        <p className="text-[11px] text-gray-400 uppercase tracking-wider">
+        <p className="text-[11px] text-text-muted uppercase tracking-wider">
           Open Mode · create reward pool
         </p>
-        <p className="text-[12px] text-gray-500 mt-1 font-mono">{repo}</p>
+        <p className="text-[12px] text-text-secondary mt-1 font-mono">{repo}</p>
       </div>
       <div className="space-y-3">
         <div>
-          <label className="text-[11px] text-gray-400 mb-1 block">Pool amount (USDC)</label>
+          <label className="text-[11px] text-text-muted mb-1 block">Pool amount (USDC)</label>
           <input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="1000"
             inputMode="decimal"
-            className="w-full border border-gray-100 px-3 py-2 text-[12px] rounded-md focus:border-accent focus:outline-none font-mono"
+            className="w-full border border-border px-3 py-2 text-[12px] rounded-md focus:border-accent focus:outline-none font-mono"
           />
         </div>
         <div className="flex items-center gap-2 text-[12px]">
           <span className="w-1.5 h-1.5 rounded-full bg-green shrink-0" />
-          <span className="text-gray-400">Approver:</span>
-          <span className="font-mono text-gray-700">{truncateAddress(wallet.address)}</span>
+          <span className="text-text-muted">Approver:</span>
+          <span className="font-mono text-text-secondary">{truncateAddress(wallet.address)}</span>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <div className="flex flex-col gap-1.5">
-          <div className="flex rounded-md border border-gray-100 overflow-hidden text-[12px]">
+          <div className="flex rounded-md border border-border overflow-hidden text-[12px]">
             {POLICY_OPTIONS.map((p) => (
               <button
                 key={p.id}
                 onClick={() => setPolicy(p.id)}
                 className={`px-3 py-1.5 transition-colors ${
-                  policy === p.id ? "bg-black text-white" : "text-gray-500 hover:text-black"
+                  policy === p.id ? "bg-text-primary text-surface" : "text-text-secondary hover:text-text-primary"
                 }`}
               >
                 {p.label}
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-text-muted">
             {POLICY_OPTIONS.find((p) => p.id === policy)?.hint}
           </p>
         </div>
         {step === "done" ? (
           <div className="flex flex-col items-start gap-2">
-            <p className="text-[13px] text-gray-700">Pool created.</p>
+            <p className="text-[13px] text-text-secondary">Pool created.</p>
             {txHash && <TxLink hash={txHash} />}
             <button
               onClick={onCreated}
@@ -651,13 +651,13 @@ function ContributorsTable({
 }) {
   return (
     <div>
-      <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">
+      <p className="text-[11px] text-text-muted uppercase tracking-wider mb-3">
         Eligible contributors · {contributors.length} sharing the split
       </p>
-      <div className="border border-gray-100 rounded-md overflow-hidden">
-        <table className="w-full">
+      <div className="border border-border rounded-md overflow-x-auto">
+        <table className="w-full min-w-[720px]">
           <thead>
-            <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+            <tr className="text-[11px] text-text-muted uppercase tracking-wider border-b border-border bg-surface-muted">
               <th className="text-left px-4 py-3 font-normal">#</th>
               <th className="text-left px-4 py-3 font-normal">Contributor</th>
               <th className="text-left px-4 py-3 font-normal">Wallet</th>
@@ -682,8 +682,8 @@ function ContributorsTable({
                   : null
 
               return (
-                <tr key={c.login} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-[12px] text-gray-400 font-mono">
+                <tr key={c.login} className="border-b border-border last:border-b-0 hover:bg-surface-muted transition-colors">
+                  <td className="px-4 py-3 text-[12px] text-text-muted font-mono">
                     {String(i + 1).padStart(2, "0")}
                   </td>
                   <td className="px-4 py-3">
@@ -694,7 +694,7 @@ function ContributorsTable({
                           href={c.profileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[13px] text-gray-700 hover:text-accent"
+                          className="text-[13px] text-text-secondary hover:text-accent"
                         >
                           {c.login}
                         </a>
@@ -703,28 +703,28 @@ function ContributorsTable({
                   </td>
                   <td className="px-4 py-3">
                     {wallet
-                      ? <span className="text-[11px] font-mono text-gray-500">{truncateAddress(wallet)}</span>
+                      ? <span className="text-[11px] font-mono text-text-secondary">{truncateAddress(wallet)}</span>
                       : <span className="text-[11px] text-amber">not registered</span>
                     }
                   </td>
-                  <td className="px-4 py-3 text-[13px] text-gray-700 text-right">{c.prs}</td>
-                  <td className="px-4 py-3 text-[13px] text-gray-700 text-right">{c.issues}</td>
-                  <td className="px-4 py-3 text-[13px] text-gray-700 text-right">{c.commits}</td>
+                  <td className="px-4 py-3 text-[13px] text-text-secondary text-right">{c.prs}</td>
+                  <td className="px-4 py-3 text-[13px] text-text-secondary text-right">{c.issues}</td>
+                  <td className="px-4 py-3 text-[13px] text-text-secondary text-right">{c.commits}</td>
                   <td className="px-4 py-3 text-right">
                     {score !== undefined
-                      ? <span className="text-[13px] text-black font-medium">{formatScore(score).toFixed(2)}</span>
-                      : <span className="text-[11px] text-gray-300">—</span>
+                      ? <span className="text-[13px] text-text-primary font-medium">{formatScore(score).toFixed(2)}</span>
+                      : <span className="text-[11px] text-text-muted">—</span>
                     }
                   </td>
                   <td className="px-4 py-3 text-right">
                     {share !== null && amount !== undefined
                       ? (
                         <div className="text-right">
-                          <span className="text-[13px] text-gray-700">{share.toFixed(1)}%</span>
-                          <div className="text-[11px] text-gray-400 font-mono">{formatPoolAmount(amount)}</div>
+                          <span className="text-[13px] text-text-secondary">{share.toFixed(1)}%</span>
+                          <div className="text-[11px] text-text-muted font-mono">{formatPoolAmount(amount)}</div>
                         </div>
                       )
-                      : <span className="text-[11px] text-gray-300">—</span>
+                      : <span className="text-[11px] text-text-muted">—</span>
                     }
                   </td>
                 </tr>
@@ -734,7 +734,7 @@ function ContributorsTable({
         </table>
       </div>
       {!hasScores && (
-        <p className="text-[11px] text-gray-400 mt-2">
+        <p className="text-[11px] text-text-muted mt-2">
           Score and share columns will populate after the agent scores this repo
         </p>
       )}
@@ -745,14 +745,14 @@ function ContributorsTable({
 function ExcludedContributors({ contributors }: { contributors: GitHubContributor[] }) {
   return (
     <div>
-      <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">
+      <p className="text-[11px] text-text-muted uppercase tracking-wider mb-3">
         Excluded · {contributors.length} not sharing the split
       </p>
-      <div className="border border-gray-100 rounded-md overflow-hidden">
+      <div className="border border-border rounded-md overflow-hidden">
         {contributors.map((c) => (
           <div
             key={c.login}
-            className="flex items-center justify-between px-4 py-2.5 border-b border-gray-50 last:border-b-0"
+            className="flex items-center justify-between px-4 py-2.5 border-b border-border last:border-b-0"
           >
             <div className="flex items-center gap-2 min-w-0">
               <img src={c.avatarUrl} alt={c.login} className="w-5 h-5 rounded-full shrink-0" />
@@ -760,7 +760,7 @@ function ExcludedContributors({ contributors }: { contributors: GitHubContributo
                 href={c.profileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[13px] text-gray-700 hover:text-accent truncate"
+                className="text-[13px] text-text-secondary hover:text-accent truncate"
               >
                 {c.login}
               </a>

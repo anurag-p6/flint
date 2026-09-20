@@ -17,21 +17,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="min-h-screen flex items-center justify-center bg-surface">
       <div className="max-w-sm w-full px-6">
         <div className="flex flex-col items-center gap-8">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-0.5">
             <Image
               src="/logo.svg"
               alt="Flint"
               width={52}
               height={52}
+              className="dark:invert"
             />
-            <h1 className="text-[24px] font-semibold text-black">Flint</h1>
+            <h1 className="text-[24px] font-semibold text-text-primary">Flint</h1>
           </div>
 
           <div className="text-center">
-            <p className="text-[13px] text-gray-600">
+            <p className="text-[13px] text-text-secondary">
               Trustless disbursement protocol for open source
             </p>
           </div>
@@ -44,7 +45,7 @@ export default function LoginPage() {
             {isLoading ? "Signing in..." : "Sign in with GitHub"}
           </button>
 
-          <p className="text-[12px] text-gray-400 text-center">
+          <p className="text-[12px] text-text-muted text-center">
             By signing in, you'll be able to see all repositories where you've installed the Flint app
           </p>
         </div>
