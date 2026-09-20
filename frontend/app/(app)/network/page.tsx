@@ -221,11 +221,11 @@ export default function NetworkPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-3">
-          <h1 className="text-[22px] font-semibold text-black">Contributor Universe</h1>
+          <h1 className="text-[22px] font-semibold text-text-primary">Contributor Universe</h1>
           <RepoSwitcher />
-          <p className="text-[13px] text-gray-400 mt-1">
+          <p className="text-[13px] text-text-muted mt-1">
             {connectedRepo
               ? `Everyone ${connectedRepo} ever paid. Drag an avatar — every line is a soulbound certificate.`
               : "Select a repo to see its universe."}
@@ -233,38 +233,38 @@ export default function NetworkPage() {
         </div>
       </div>
 
-      <div className="relative border border-gray-100 rounded-md overflow-hidden bg-white h-[560px]">
+      <div className="relative border border-border rounded-md overflow-hidden bg-surface h-[420px] sm:h-[560px]">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-[13px] text-gray-400">Indexing the universe…</p>
+            <p className="text-[13px] text-text-muted">Indexing the universe…</p>
           </div>
         ) : error ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center">
-            <p className="text-[13px] text-black font-medium">Universe unavailable</p>
-            <p className="text-[12px] text-gray-400 font-mono">{error}</p>
+            <p className="text-[13px] text-text-primary font-medium">Universe unavailable</p>
+            <p className="text-[12px] text-text-muted font-mono">{error}</p>
             {error === "subgraph-not-configured" ? (
-              <p className="text-[12px] text-gray-400 max-w-md">
+              <p className="text-[12px] text-text-muted max-w-md">
                 Set <span className="font-mono">NEXT_PUBLIC_SUBGRAPH_URL</span> in{" "}
                 <span className="font-mono">frontend/.env</span> to the Studio query URL, then refresh.
               </p>
             ) : null}
             <button
               onClick={() => load(true)}
-              className="mt-2 px-3 py-1.5 text-[12px] font-medium text-black border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+              className="mt-2 px-3 py-1.5 text-[12px] font-medium text-text-primary border border-border rounded-md hover:border-text-muted transition-colors"
             >
               Retry
             </button>
           </div>
         ) : !connectedRepo ? (
           <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-            <p className="text-[13px] text-gray-400 max-w-sm">
+            <p className="text-[13px] text-text-muted max-w-sm">
               The universe follows the repo switcher — pick the repo where the Flint app is
               installed to see its members, pools, and grants.
             </p>
           </div>
         ) : filteredGraph.nodes.length === 0 && filteredGraph.hubs.length === 0 ? (
           <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-            <p className="text-[13px] text-gray-400">
+            <p className="text-[13px] text-text-muted">
               {graph.edges.length === 0
                 ? `No certificates for ${connectedRepo} yet — members appear here after the first payout.`
                 : "No matches — clear the search."}

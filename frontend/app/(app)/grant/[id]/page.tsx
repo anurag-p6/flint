@@ -175,11 +175,11 @@ export default function GrantDetailPage() {
   if (!hasGrant && grantData !== undefined) {
     return (
       <div className="space-y-6">
-        <Link href="/grant" className="text-[12px] text-gray-400 hover:text-black transition-colors">
+        <Link href="/grant" className="text-[12px] text-text-muted hover:text-text-primary transition-colors">
           ← All grants
         </Link>
-        <div className="border border-gray-100 rounded-md p-6">
-          <p className="text-[13px] text-gray-700">Grant #{id} not found</p>
+        <div className="border border-border rounded-md p-6">
+          <p className="text-[13px] text-text-secondary">Grant #{id} not found</p>
         </div>
       </div>
     )
@@ -187,7 +187,7 @@ export default function GrantDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/grant" className="text-[12px] text-gray-400 hover:text-black transition-colors">
+      <Link href="/grant" className="text-[12px] text-text-muted hover:text-text-primary transition-colors">
         ← All grants
       </Link>
 
@@ -197,13 +197,13 @@ export default function GrantDetailPage() {
       {/* Milestones table with release actions */}
       {chainMilestones.length > 0 && (
         <div>
-          <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">
+          <p className="text-[11px] text-text-muted uppercase tracking-wider mb-3">
             Milestones ({chainMilestones.length})
           </p>
-          <div className="border border-gray-100 rounded-md overflow-hidden">
-            <table className="w-full">
+          <div className="border border-border rounded-md overflow-x-auto">
+            <table className="w-full min-w-[720px]">
               <thead>
-                <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                <tr className="text-[11px] text-text-muted uppercase tracking-wider border-b border-border bg-surface-muted">
                   <th className="text-left px-4 py-3 font-normal">#</th>
                   <th className="text-left px-4 py-3 font-normal">Milestone</th>
                   <th className="text-right px-4 py-3 font-normal">Release</th>
@@ -239,7 +239,7 @@ export default function GrantDetailPage() {
                   const statusColor =
                     chainStatus === "Released" || chainStatus === "AutoReleased" ? "bg-green" :
                     chainStatus === "Verified" ? "bg-amber" :
-                    "bg-gray-300"
+                    "bg-border"
 
                   const linkedPRs = [
                     ...new Set([
@@ -256,27 +256,27 @@ export default function GrantDetailPage() {
                     (chainStatus === "Verified" || (i === 0 && hasMergedCloser))
 
                   return (
-                    <tr key={i} className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-[12px] text-gray-400 font-mono">
+                    <tr key={i} className="border-b border-border last:border-b-0 hover:bg-surface-muted transition-colors">
+                      <td className="px-4 py-3 text-[12px] text-text-muted font-mono">
                         {String(i + 1).padStart(2, "0")}
                       </td>
                       <td className="px-4 py-3">
-                        <p className="text-[13px] text-gray-700 font-medium">{title}</p>
+                        <p className="text-[13px] text-text-secondary font-medium">{title}</p>
                         {issueNumber != null && (
                           <a
                             href={issueUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] text-gray-400 hover:text-accent font-mono"
+                            className="text-[11px] text-text-muted hover:text-accent font-mono"
                           >
                             #{issueNumber}
                           </a>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-[13px] text-gray-700 text-right font-mono">
+                      <td className="px-4 py-3 text-[13px] text-text-secondary text-right font-mono">
                         {trancheBps / 100}%
                       </td>
-                      <td className="px-4 py-3 text-[13px] text-gray-700 text-right font-mono">
+                      <td className="px-4 py-3 text-[13px] text-text-secondary text-right font-mono">
                         {formatAmount(trancheAmount)}
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -285,14 +285,14 @@ export default function GrantDetailPage() {
                             {linkedPRs.map((n) => {
                               const st = prState[n]
                               const dot =
-                                st == null ? "bg-gray-200" : st.merged ? "bg-green" : "bg-amber"
+                                st == null ? "bg-border" : st.merged ? "bg-green" : "bg-amber"
                               return (
                                 <a
                                   key={n}
                                   href={`https://github.com/${repo}/pull/${n}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-[12px] text-gray-500 font-mono hover:text-accent"
+                                  className="inline-flex items-center gap-1 text-[12px] text-text-secondary font-mono hover:text-accent"
                                 >
                                   <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />#{n}
                                 </a>
@@ -300,16 +300,16 @@ export default function GrantDetailPage() {
                             })}
                           </span>
                         ) : (
-                          <span className="text-[11px] text-gray-300">none</span>
+                          <span className="text-[11px] text-text-muted">none</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="inline-flex items-center gap-1.5">
                           <span className={`w-1.5 h-1.5 rounded-full ${statusColor}`} />
-                          <span className="text-[11px] text-gray-700">{displayStatus}</span>
+                          <span className="text-[11px] text-text-secondary">{displayStatus}</span>
                         </span>
                         {deadlineUnix > 0 && (
-                          <p className="text-[11px] text-gray-400 font-mono mt-0.5">
+                          <p className="text-[11px] text-text-muted font-mono mt-0.5">
                             due {countdown(deadlineUnix)}
                           </p>
                         )}
@@ -347,7 +347,7 @@ export default function GrantDetailPage() {
 
       {/* Transaction links */}
       {hasGrant && (
-        <div className="flex items-center gap-4 text-[12px]">
+        <div className="flex items-center gap-4 text-[12px] flex-wrap">
           <AddressLink address={addresses.grant} label="Grant contract on Arcscan ↗" />
           {funded?.issueUrl && (
             <a
@@ -359,10 +359,10 @@ export default function GrantDetailPage() {
               GitHub issue #{funded.issueNumber} ↗
             </a>
           )}
-          <span className="text-gray-400 font-mono">
+          <span className="text-text-muted font-mono">
             Grantee: {truncateAddress(grantee)}
           </span>
-          <span className="text-gray-400 font-mono">
+          <span className="text-text-muted font-mono">
             Approver: {truncateAddress(approver)}
           </span>
         </div>
@@ -528,7 +528,7 @@ function ReclaimSection({
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 border border-amber/30 rounded-md">
-      <span className="text-[13px] text-gray-700">
+      <span className="text-[13px] text-text-secondary">
         Deadline passed · {formatAmount(remainder)} reclaimable
       </span>
       <button
@@ -554,7 +554,7 @@ function ReclaimSection({
           }
         }}
         disabled={waiting || !!txHash}
-        className="ml-auto px-4 py-2 text-[13px] font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50"
+        className="ml-auto px-4 py-2 text-[13px] font-medium text-surface bg-text-primary rounded-md hover:opacity-90 transition-colors disabled:opacity-50"
       >
         {waiting ? "Reclaiming..." : txHash ? "Reclaimed" : "Reclaim funds"}
       </button>

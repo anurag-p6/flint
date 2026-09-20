@@ -14,7 +14,7 @@ export function ConnectButton() {
     return (
       <button
         onClick={() => disconnect()}
-        className="px-4 py-2 text-[13px] font-mono text-gray-400 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+        className="px-4 py-2 text-[13px] font-mono text-text-muted border border-border rounded-md hover:border-text-muted transition-colors"
       >
         {truncateAddress(address)}
       </button>

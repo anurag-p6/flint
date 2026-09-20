@@ -34,14 +34,14 @@ export function PrivyWalletButton() {
   // of showing a stale Connect button.
   if ((!authenticated || !activePrivy) && wagmiConnected && wagmiAddress) {
     return (
-      <span className="flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-md">
+      <span className="flex items-center gap-2 px-4 py-2 border border-border rounded-md">
         <span className="w-1.5 h-1.5 rounded-full bg-green shrink-0" />
-        <span className="font-mono text-gray-700 text-[12px]">
+        <span className="font-mono text-text-secondary text-[12px]">
           {truncateAddress(wagmiAddress)}
         </span>
         <button
           onClick={() => wagmiDisconnect()}
-          className="text-[11px] text-gray-400 hover:text-red transition-colors"
+          className="text-[11px] text-text-muted hover:text-red transition-colors"
         >
           Disconnect
         </button>
@@ -51,7 +51,7 @@ export function PrivyWalletButton() {
 
   if (!privyEnabled) {
     return (
-      <span className="px-4 py-2 text-[12px] text-amber border border-gray-100 rounded-md">
+      <span className="px-4 py-2 text-[12px] text-amber border border-border rounded-md">
         Email login not configured
       </span>
     );
@@ -59,7 +59,7 @@ export function PrivyWalletButton() {
 
   if (!ready) {
     return (
-      <span className="px-4 py-2 text-[12px] text-gray-400 border border-gray-100 rounded-md">
+      <span className="px-4 py-2 text-[12px] text-text-muted border border-border rounded-md">
         …
       </span>
     );
@@ -80,16 +80,16 @@ export function PrivyWalletButton() {
               className="fixed inset-0 z-40"
               onClick={() => setMenuOpen(false)}
             />
-            <span className="absolute right-0 top-full mt-2 z-50 w-[260px] bg-white border border-gray-100 rounded-md p-2 space-y-1">
+            <span className="absolute right-0 top-full mt-2 z-50 w-[260px] bg-surface border border-border rounded-md p-2 space-y-1">
               <button
                 onClick={() => {
                   setMenuOpen(false);
                   login();
                 }}
-                className="w-full text-left px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-3 py-2.5 rounded-md hover:bg-surface-muted transition-colors"
               >
-                <span className="block text-[13px] font-medium text-black">Email</span>
-                <span className="block text-[11px] text-gray-400">
+                <span className="block text-[13px] font-medium text-text-primary">Email</span>
+                <span className="block text-[11px] text-text-muted">
                   Embedded wallet auto-created, no seed phrase
                 </span>
               </button>
@@ -98,10 +98,10 @@ export function PrivyWalletButton() {
                   setMenuOpen(false);
                   connectWallet();
                 }}
-                className="w-full text-left px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors"
+                className="w-full text-left px-3 py-2.5 rounded-md hover:bg-surface-muted transition-colors"
               >
-                <span className="block text-[13px] font-medium text-black">MetaMask</span>
-                <span className="block text-[11px] text-gray-400">
+                <span className="block text-[13px] font-medium text-text-primary">MetaMask</span>
+                <span className="block text-[11px] text-text-muted">
                   Use your funds in place
                 </span>
               </button>
@@ -113,12 +113,12 @@ export function PrivyWalletButton() {
   }
 
   return (
-    <span className="flex items-center gap-2 px-4 py-2 border border-gray-100 rounded-md">
+    <span className="flex items-center gap-2 px-4 py-2 border border-border rounded-md">
       <span className="w-1.5 h-1.5 rounded-full bg-green shrink-0" />
-      <span className="font-mono text-gray-700 text-[12px]">
+      <span className="font-mono text-text-secondary text-[12px]">
         {truncateAddress(activePrivy.address)}
       </span>
-      <span className="text-[10px] text-gray-400 uppercase tracking-wider">
+      <span className="text-[10px] text-text-muted uppercase tracking-wider">
         {sourceLabel(activePrivy.walletClientType)}
       </span>
       <button
@@ -126,7 +126,7 @@ export function PrivyWalletButton() {
           logout();
           if (wagmiConnected) wagmiDisconnect();
         }}
-        className="text-[11px] text-gray-400 hover:text-red transition-colors"
+        className="text-[11px] text-text-muted hover:text-red transition-colors"
       >
         Log out
       </button>

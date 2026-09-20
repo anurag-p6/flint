@@ -63,8 +63,8 @@ function StatusBadge({ status }: { status: string }) {
   const color =
     status === "Completed" || status === "Released" ? "bg-green text-white" :
     status === "In progress" ? "bg-accent text-white" :
-    status === "Unfunded" ? "bg-gray-100 text-gray-500" :
-    "bg-gray-100 text-gray-700"
+    status === "Unfunded" ? "bg-surface-muted text-text-secondary" :
+    "bg-surface-muted text-text-secondary"
   return (
     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${color}`}>
       {status}
@@ -74,9 +74,9 @@ function StatusBadge({ status }: { status: string }) {
 
 function MetricCard({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="border border-gray-100 rounded-md px-4 py-3">
-      <p className="text-[11px] text-gray-400 uppercase tracking-wider">{label}</p>
-      <p className={`text-[18px] text-black font-medium mt-1 ${mono ? "font-mono text-[15px]" : ""}`}>{value}</p>
+    <div className="border border-border rounded-md px-4 py-3">
+      <p className="text-[11px] text-text-muted uppercase tracking-wider">{label}</p>
+      <p className={`text-[18px] text-text-primary font-medium mt-1 ${mono ? "font-mono text-[15px]" : ""}`}>{value}</p>
     </div>
   )
 }
@@ -164,16 +164,16 @@ export default function GrantPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-3">
-          <h1 className="text-[22px] font-semibold text-black">Grants</h1>
+          <h1 className="text-[22px] font-semibold text-text-primary">Grants</h1>
           <RepoSwitcher />
         </div>
         {connectedRepo && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <button
               onClick={() => setBridgeOpen(true)}
-              className="px-3 py-1.5 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+              className="px-3 py-1.5 text-[12px] font-medium text-text-secondary border border-border rounded-md hover:border-text-muted transition-colors"
             >
               Bridge to Arc
             </button>
@@ -181,7 +181,7 @@ export default function GrantPage() {
               href={`https://github.com/${connectedRepo}/issues?q=label%3Aflint`}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1.5 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors"
+              className="px-3 py-1.5 text-[12px] font-medium text-text-secondary border border-border rounded-md hover:border-text-muted transition-colors"
             >
               View issues
             </a>
@@ -193,13 +193,13 @@ export default function GrantPage() {
       {/* No repo selected */}
       {!connectedRepo && (
         <div className="space-y-6 pt-2">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <MetricCard label="Grant contract" value={truncateAddress(addresses.grant)} mono />
             <MetricCard label="Auto-release" value="14 days" />
             <MetricCard label="Approval" value="Wallet signer" />
           </div>
-          <div className="border-t border-gray-100 pt-6">
-            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-4">Grant lifecycle</p>
+          <div className="border-t border-border pt-6">
+            <p className="text-[11px] text-text-muted uppercase tracking-wider mb-4">Grant lifecycle</p>
             <div className="space-y-3">
               {[
                 { step: "01", text: "Create a GitHub issue with the 'flint' label" },
@@ -209,8 +209,8 @@ export default function GrantPage() {
                 { step: "05", text: "Milestones verified by CRE agent, USDC released per tranche" },
               ].map((s) => (
                 <div key={s.step} className="flex items-start gap-3">
-                  <span className="text-[11px] text-gray-400 font-mono pt-0.5">{s.step}</span>
-                  <span className="text-[13px] text-gray-700">{s.text}</span>
+                  <span className="text-[11px] text-text-muted font-mono pt-0.5">{s.step}</span>
+                  <span className="text-[13px] text-text-secondary">{s.text}</span>
                 </div>
               ))}
             </div>
@@ -222,7 +222,7 @@ export default function GrantPage() {
       {connectedRepo && (
         <>
           {/* Metrics */}
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard label="Active grants" value={funded.length.toString()} />
             <MetricCard label="Pending" value={pending.length.toString()} />
             <MetricCard label="Total funded" value={`${totalFunded.toLocaleString()} USDC`} />
@@ -232,13 +232,13 @@ export default function GrantPage() {
           {/* Funded grants table */}
           {funded.length > 0 && (
             <div>
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">
+              <p className="text-[11px] text-text-muted uppercase tracking-wider mb-3">
                 Funded grants ({funded.length})
               </p>
-              <div className="border border-gray-100 rounded-md overflow-hidden">
-                <table className="w-full">
+              <div className="border border-border rounded-md overflow-x-auto">
+                <table className="w-full min-w-[720px]">
                   <thead>
-                    <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                    <tr className="text-[11px] text-text-muted uppercase tracking-wider border-b border-border bg-surface-muted">
                       <th className="text-left px-4 py-3 font-normal">ID</th>
                       <th className="text-left px-4 py-3 font-normal">Title</th>
                       <th className="text-left px-4 py-3 font-normal">Grantee</th>
@@ -255,9 +255,9 @@ export default function GrantPage() {
                       return (
                         <tr
                           key={f.grantId}
-                          className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="border-b border-border last:border-b-0 hover:bg-surface-muted transition-colors cursor-pointer"
                         >
-                          <td className="px-4 py-3 text-[12px] text-gray-400 font-mono">
+                          <td className="px-4 py-3 text-[12px] text-text-muted font-mono">
                             <Link
                               href={`/grant/${f.grantId}?repo=${encodeURIComponent(connectedRepo)}`}
                               className="hover:text-accent"
@@ -268,29 +268,29 @@ export default function GrantPage() {
                           <td className="px-4 py-3">
                             <Link
                               href={`/grant/${f.grantId}?repo=${encodeURIComponent(connectedRepo)}`}
-                              className="text-[13px] text-gray-700 hover:text-accent font-medium"
+                              className="text-[13px] text-text-secondary hover:text-accent font-medium"
                             >
                               {f.title}
                             </Link>
-                            <span className="text-[11px] text-gray-400 ml-2 font-mono">
+                            <span className="text-[11px] text-text-muted ml-2 font-mono">
                               #{f.issueNumber}
                             </span>
                           </td>
                           <td className="px-4 py-3">
                             {assignee ? (
-                              <span className="text-[12px] text-gray-600">{assignee}</span>
+                              <span className="text-[12px] text-text-secondary">{assignee}</span>
                             ) : (
-                              <span className="text-[11px] text-gray-300">—</span>
+                              <span className="text-[11px] text-text-muted">—</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-[13px] text-gray-700 text-right font-mono">
+                          <td className="px-4 py-3 text-[13px] text-text-secondary text-right font-mono">
                             {formatAmount(BigInt(f.totalAmount))}
                           </td>
-                          <td className="px-4 py-3 text-[13px] text-gray-700 text-right font-mono">
+                          <td className="px-4 py-3 text-[13px] text-text-secondary text-right font-mono">
                             {formatAmount(BigInt(f.amountPaid))}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className="text-[12px] text-gray-600 font-mono">
+                            <span className="text-[12px] text-text-secondary font-mono">
                               {milestoneSummary(f)}
                             </span>
                           </td>
@@ -309,13 +309,13 @@ export default function GrantPage() {
           {/* Pending (unfunded) issues */}
           {pending.length > 0 && (
             <div>
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-3">
+              <p className="text-[11px] text-text-muted uppercase tracking-wider mb-3">
                 Pending — unfunded issues ({pending.length})
               </p>
-              <div className="border border-gray-100 rounded-md overflow-hidden">
-                <table className="w-full">
+              <div className="border border-border rounded-md overflow-x-auto">
+                <table className="w-full min-w-[720px]">
                   <thead>
-                    <tr className="text-[11px] text-gray-400 uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                    <tr className="text-[11px] text-text-muted uppercase tracking-wider border-b border-border bg-surface-muted">
                       <th className="text-left px-4 py-3 font-normal">Issue</th>
                       <th className="text-left px-4 py-3 font-normal">Title</th>
                       <th className="text-left px-4 py-3 font-normal">Assignee</th>
@@ -335,9 +335,9 @@ export default function GrantPage() {
                       return (
                         <tr
                           key={p.issueNumber}
-                          className="border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
+                          className="border-b border-border last:border-b-0 hover:bg-surface-muted transition-colors"
                         >
-                          <td className="px-4 py-3 text-[12px] text-gray-400 font-mono">
+                          <td className="px-4 py-3 text-[12px] text-text-muted font-mono">
                             <a
                               href={p.issueUrl}
                               target="_blank"
@@ -352,7 +352,7 @@ export default function GrantPage() {
                               href={p.issueUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[13px] text-gray-700 hover:text-accent font-medium"
+                              className="text-[13px] text-text-secondary hover:text-accent font-medium"
                             >
                               {p.title}
                             </a>
@@ -365,20 +365,20 @@ export default function GrantPage() {
                           <td className="px-4 py-3">
                             {assignee ? (
                               <div>
-                                <span className="text-[12px] text-gray-600">{assignee}</span>
+                                <span className="text-[12px] text-text-secondary">{assignee}</span>
                                 {missing.length > 0 && (
                                   <p className="text-[11px] text-amber">no wallet</p>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-[11px] text-gray-300">unassigned</span>
+                              <span className="text-[11px] text-text-muted">unassigned</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-[13px] text-gray-700 text-right font-mono">
+                          <td className="px-4 py-3 text-[13px] text-text-secondary text-right font-mono">
                             {p.amount !== null ? `${p.amount} USDC` : "—"}
                           </td>
                           <td className="px-4 py-3 text-center">
-                            <span className="text-[12px] text-gray-600 font-mono">
+                            <span className="text-[12px] text-text-secondary font-mono">
                               {p.milestones.length}
                             </span>
                           </td>
@@ -391,7 +391,7 @@ export default function GrantPage() {
                                 missing.length > 0 ? "Waiting on wallet resolution" :
                                 "Fund this grant"
                               }
-                              className="px-3 py-1.5 text-[12px] font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors disabled:opacity-30"
+                              className="px-3 py-1.5 text-[12px] font-medium text-surface bg-text-primary rounded-md hover:opacity-90 transition-colors disabled:opacity-30"
                             >
                               Fund
                             </button>
@@ -407,17 +407,17 @@ export default function GrantPage() {
 
           {/* Empty state */}
           {!loading && funded.length === 0 && pending.length === 0 && (
-            <div className="border border-gray-100 rounded-md p-6">
-              <p className="text-[13px] text-gray-700">No grants found</p>
-              <p className="text-[12px] text-gray-400 mt-1">
-                Create GitHub issues with the <span className="font-mono bg-gray-100 px-1 rounded">flint</span> label and add{" "}
-                <span className="font-mono bg-gray-100 px-1 rounded">release: X%</span> in the body
+            <div className="border border-border rounded-md p-6">
+              <p className="text-[13px] text-text-secondary">No grants found</p>
+              <p className="text-[12px] text-text-muted mt-1">
+                Create GitHub issues with the <span className="font-mono bg-surface-muted px-1 rounded">flint</span> label and add{" "}
+                <span className="font-mono bg-surface-muted px-1 rounded">release: X%</span> in the body
               </p>
             </div>
           )}
 
           {loading && (
-            <p className="text-[13px] text-gray-400">Loading grants...</p>
+            <p className="text-[13px] text-text-muted">Loading grants...</p>
           )}
         </>
       )}
@@ -560,22 +560,22 @@ function FundModal({
       aria-modal="true"
     >
       <div
-        className="w-full max-w-lg bg-white rounded-md shadow-sm border border-gray-100 p-5 space-y-4 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-lg bg-surface rounded-md shadow-sm border border-border p-5 space-y-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[15px] font-medium text-black">
+            <p className="text-[15px] font-medium text-text-primary">
               Fund grant · {formatUsdcExact(total)} USDC
             </p>
-            <p className="text-[12px] text-gray-400 mt-0.5">
+            <p className="text-[12px] text-text-muted mt-0.5">
               {issue.title} <span className="font-mono">#{issue.issueNumber}</span>
             </p>
           </div>
           <button
             onClick={() => !busy && onClose()}
             disabled={busy}
-            className="text-gray-400 hover:text-gray-700 text-[18px] leading-none px-1 disabled:opacity-30"
+            className="text-text-muted hover:text-text-secondary text-[18px] leading-none px-1 disabled:opacity-30"
           >
             x
           </button>
@@ -584,19 +584,19 @@ function FundModal({
         <div className="space-y-1">
           {fundings.map((f) => (
             <div key={f.granteeGithub ?? f.granteeAddress} className="flex items-center justify-between text-[13px]">
-              <span className="text-gray-700">
+              <span className="text-text-secondary">
                 {f.granteeGithub ?? truncateAddress(f.granteeAddress)}{" "}
-                <span className="font-mono text-gray-400">{truncateAddress(f.granteeAddress)}</span>
+                <span className="font-mono text-text-muted">{truncateAddress(f.granteeAddress)}</span>
               </span>
-              <span className="font-mono text-gray-700">{f.totalUsdc} USDC</span>
+              <span className="font-mono text-text-secondary">{f.totalUsdc} USDC</span>
             </div>
           ))}
         </div>
 
         <div className="space-y-1">
           {fundings[0]?.milestones.map((m, i) => (
-            <div key={i} className="flex items-center gap-2 text-[12px] text-gray-500">
-              <span className="text-gray-300 font-mono">{String(i + 1).padStart(2, "0")}</span>
+            <div key={i} className="flex items-center gap-2 text-[12px] text-text-secondary">
+              <span className="text-text-muted font-mono">{String(i + 1).padStart(2, "0")}</span>
               <span className="truncate">{m.title}</span>
               <span className="ml-auto font-mono shrink-0">{m.releaseBps / 100}%</span>
             </div>
@@ -606,14 +606,14 @@ function FundModal({
         {!wallet ? (
           <p className="text-[12px] text-amber">Connect a wallet to fund this grant.</p>
         ) : (
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-text-muted">
             Funding as <span className="font-mono">{truncateAddress(wallet.address)}</span> · auto-release 14 days after verification
           </p>
         )}
 
         {step === "done" ? (
           <div className="space-y-2">
-            <p className="text-[13px] text-gray-700">Grant funded successfully.</p>
+            <p className="text-[13px] text-text-secondary">Grant funded successfully.</p>
             {txHash && <TxLink hash={txHash} />}
             <button
               onClick={onDone}
@@ -627,14 +627,14 @@ function FundModal({
             <button
               onClick={() => !busy && onClose()}
               disabled={busy}
-              className="text-[12px] text-gray-400 hover:text-black transition-colors disabled:opacity-30"
+              className="text-[12px] text-text-muted hover:text-text-primary transition-colors disabled:opacity-30"
             >
               Cancel
             </button>
             <button
               onClick={handleFund}
               disabled={busy || !wallet}
-              className="px-4 py-2 text-[13px] font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50"
+              className="px-4 py-2 text-[13px] font-medium text-surface bg-text-primary rounded-md hover:opacity-90 transition-colors disabled:opacity-50"
             >
               {step === "approving"
                 ? "Approving USDC..."

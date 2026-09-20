@@ -69,8 +69,8 @@ export function NodePanel({
         : "Unmatched pool hash";
 
   return (
-    <aside className="absolute top-3 right-3 bottom-3 w-[300px] bg-white border border-gray-100 rounded-md shadow-sm flex flex-col overflow-hidden">
-      <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+    <aside className="absolute inset-x-3 bottom-3 top-auto max-h-[55%] sm:inset-x-auto sm:right-3 sm:top-3 sm:bottom-3 sm:w-[300px] sm:max-h-none bg-surface border border-border rounded-md shadow-sm flex flex-col overflow-hidden">
+      <div className="px-4 pt-4 pb-3 border-b border-border">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             {isPerson && identity?.avatarUrl ? (
@@ -86,52 +86,52 @@ export function NodePanel({
             ) : (
               <span
                 className={`w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-[13px] font-medium ${
-                  hub && hub.kind === "grant" ? "bg-accent text-white" : hub ? "bg-black text-white" : "bg-gray-100 text-gray-400"
+                  hub && hub.kind === "grant" ? "bg-accent text-white" : hub ? "bg-text-primary text-surface" : "bg-surface-muted text-text-muted"
                 }`}
               >
                 {title.slice(0, 2).toUpperCase()}
               </span>
             )}
             <div className="min-w-0">
-              <p className="text-[14px] font-medium text-black truncate">{title}</p>
-              <p className="text-[11px] text-gray-400 truncate font-mono">{subtitle}</p>
+              <p className="text-[14px] font-medium text-text-primary truncate">{title}</p>
+              <p className="text-[11px] text-text-muted truncate font-mono">{subtitle}</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close panel"
-            className="text-gray-400 hover:text-gray-700 text-[16px] leading-none px-1"
+            className="text-text-muted hover:text-text-secondary text-[16px] leading-none px-1"
           >
             ×
           </button>
         </div>
         {isPerson ? (
           <div className="grid grid-cols-2 gap-2 mt-3">
-            <div className="border border-gray-100 rounded-md px-3 py-2">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Flint Score</p>
-              <p className="text-[17px] text-black font-medium mt-0.5">
+            <div className="border border-border rounded-md px-3 py-2">
+              <p className="text-[10px] text-text-muted uppercase tracking-wider">Flint Score</p>
+              <p className="text-[17px] text-text-primary font-medium mt-0.5">
                 <CountUp value={Number(node!.totalScore)} format={(n) => formatScore(BigInt(Math.round(n)))} />
               </p>
             </div>
-            <div className="border border-gray-100 rounded-md px-3 py-2">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Earned</p>
-              <p className="text-[17px] text-black font-medium mt-0.5 font-mono">
+            <div className="border border-border rounded-md px-3 py-2">
+              <p className="text-[10px] text-text-muted uppercase tracking-wider">Earned</p>
+              <p className="text-[17px] text-text-primary font-medium mt-0.5 font-mono">
                 <CountUp value={Number(node!.totalEarned)} format={(n) => formatUSDC(BigInt(Math.round(n)))} />
               </p>
             </div>
           </div>
         ) : (
-          <div className="border border-gray-100 rounded-md px-3 py-2 mt-3">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider">Total disbursed</p>
-            <p className="text-[17px] text-black font-medium mt-0.5 font-mono">
-              {formatUSDC(hub!.totalDisbursed)} <span className="text-[11px] text-gray-400">USDC</span>
+          <div className="border border-border rounded-md px-3 py-2 mt-3">
+            <p className="text-[10px] text-text-muted uppercase tracking-wider">Total disbursed</p>
+            <p className="text-[17px] text-text-primary font-medium mt-0.5 font-mono">
+              {formatUSDC(hub!.totalDisbursed)} <span className="text-[11px] text-text-muted">USDC</span>
             </p>
           </div>
         )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-        <p className="text-[10px] text-gray-400 uppercase tracking-wider">
+        <p className="text-[10px] text-text-muted uppercase tracking-wider">
           Certificates · {edges.length}
         </p>
         {edges.map((e) => {
@@ -143,18 +143,18 @@ export function NodePanel({
               href={txUrl(e.txHash)}
               target="_blank"
               rel="noreferrer"
-              className="block border border-gray-100 rounded-md px-3 py-2 hover:border-gray-400 transition-colors"
+              className="block border border-border rounded-md px-3 py-2 hover:border-text-muted transition-colors"
             >
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[12px] text-black font-medium truncate">
+                <p className="text-[12px] text-text-primary font-medium truncate">
                   {isPerson ? other : shortAddress(other)}
                 </p>
-                <p className="text-[12px] text-gray-700 font-mono shrink-0 tnum">
+                <p className="text-[12px] text-text-secondary font-mono shrink-0 tnum">
                   {formatUSDC(e.amount)}
                 </p>
               </div>
               <div className="flex items-center justify-between gap-2 mt-0.5">
-                <p className="text-[11px] text-gray-400">
+                <p className="text-[11px] text-text-muted">
                   Receipt #{e.id} · score {formatScore(e.score)} · {e.mode}
                 </p>
                 <p className="text-[11px] text-accent shrink-0">arcscan ↗</p>
@@ -163,7 +163,7 @@ export function NodePanel({
           );
         })}
         {edges.length === 0 ? (
-          <p className="text-[12px] text-gray-400">No certificates in this view.</p>
+          <p className="text-[12px] text-text-muted">No certificates in this view.</p>
         ) : null}
       </div>
     </aside>

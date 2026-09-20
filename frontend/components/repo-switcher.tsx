@@ -68,7 +68,7 @@ export function RepoSwitcher() {
 
   if (isLoading) {
     return (
-      <div className="text-[12px] text-gray-400">
+      <div className="text-[12px] text-text-muted">
         Loading repositories...
       </div>
     )
@@ -77,7 +77,7 @@ export function RepoSwitcher() {
   if (error && repos.length === 0) {
     return (
       <div className="space-y-2">
-        <p className="text-[12px] text-gray-400">{error}</p>
+        <p className="text-[12px] text-text-muted">{error}</p>
         <a
           href="https://github.com/apps/flint-protocol/installations/new"
           target="_blank"
@@ -95,24 +95,24 @@ export function RepoSwitcher() {
       <div className="relative flex-1">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="px-3 py-2 text-[12px] font-medium text-gray-700 border border-gray-100 rounded-md hover:border-gray-400 transition-colors text-left flex items-center justify-between gap-2"
+        className="px-3 py-2 text-[12px] font-medium text-text-secondary border border-border rounded-md hover:border-text-muted transition-colors text-left flex items-center justify-between gap-2"
       >
         <span className="truncate">
           {selected?.name || "Select repository"}
         </span>
-        <span className="text-[10px] text-gray-400 shrink-0">▼</span>
+        <span className="text-[10px] text-text-muted shrink-0">▼</span>
       </button>
 
       {isOpen && repos.length > 0 && (
-        <div className="absolute top-full mt-1 w-full bg-white border border-gray-100 rounded-md shadow-sm z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full mt-1 w-full bg-surface border border-border rounded-md shadow-sm z-50 max-h-60 overflow-y-auto">
           {repos.map((repo) => (
             <button
               key={repo.name}
               onClick={() => handleSelect(repo)}
-              className={`w-full px-3 py-2 text-[11px] text-left hover:bg-gray-50 border-b border-gray-50 last:border-b-0 flex items-center gap-2 ${
+              className={`w-full px-3 py-2 text-[11px] text-left hover:bg-surface-muted border-b border-border last:border-b-0 flex items-center gap-2 ${
                 selected?.name === repo.name
-                  ? "bg-gray-50 text-accent font-medium"
-                  : "text-gray-700"
+                  ? "bg-surface-muted text-accent font-medium"
+                  : "text-text-secondary"
               }`}
             >
               <img
@@ -131,7 +131,7 @@ export function RepoSwitcher() {
         target="_blank"
         rel="noopener noreferrer"
         title="Add the Flint app to another GitHub repo"
-        className="w-8 h-8 shrink-0 rounded-full border border-gray-100 text-gray-500 hover:text-black hover:border-gray-400 transition-colors flex items-center justify-center text-[16px] leading-none"
+        className="w-8 h-8 shrink-0 rounded-full border border-border text-text-secondary hover:text-text-primary hover:border-text-muted transition-colors flex items-center justify-center text-[16px] leading-none"
       >
         +
       </a>

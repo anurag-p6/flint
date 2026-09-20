@@ -106,20 +106,20 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
       aria-label="Bridge USDC to Arc"
     >
       <div
-        className="w-full max-w-lg bg-white rounded-md shadow-sm border border-gray-100 p-5 space-y-4"
+        className="w-full max-w-lg bg-surface rounded-md shadow-sm border border-border p-5 space-y-4"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[15px] font-medium text-black">Bridge USDC to Arc</p>
-            <p className="text-[12px] text-gray-400 mt-0.5">
+            <p className="text-[15px] font-medium text-text-primary">Bridge USDC to Arc</p>
+            <p className="text-[12px] text-text-muted mt-0.5">
               Native CCTP · Sepolia testnets · lands in your wallet in ~5–15 min
             </p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-gray-400 hover:text-gray-700 text-[18px] leading-none px-1"
+            className="text-text-muted hover:text-text-secondary text-[18px] leading-none px-1"
           >
             ×
           </button>
@@ -127,8 +127,8 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
 
         <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-stretch">
           {/* FROM: source chain selector */}
-          <div className="border border-gray-100 rounded-md p-2 space-y-1 bg-white">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider px-1 pt-1">From</p>
+          <div className="border border-border rounded-md p-2 space-y-1 bg-surface">
+            <p className="text-[10px] text-text-muted uppercase tracking-wider px-1 pt-1">From</p>
             {SOURCES.map((s) => {
               const active = s.id === source
               return (
@@ -137,7 +137,7 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
                   onClick={() => setSource(s.id)}
                   aria-pressed={active}
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left transition-colors ${
-                    active ? "bg-gray-50 border border-gray-400" : "border border-transparent hover:bg-gray-50"
+                    active ? "bg-surface-muted border border-text-muted" : "border border-transparent hover:bg-surface-muted"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -151,19 +151,19 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
                     }`}
                   />
                   <span className="min-w-0">
-                    <span className="block text-[12px] text-black font-medium leading-tight">{s.label}</span>
-                    <span className="block text-[10px] text-gray-400 font-mono leading-tight">{s.sub}</span>
+                    <span className="block text-[12px] text-text-primary font-medium leading-tight">{s.label}</span>
+                    <span className="block text-[10px] text-text-muted font-mono leading-tight">{s.sub}</span>
                   </span>
                 </button>
               )
             })}
           </div>
 
-          <div className="flex items-center text-gray-300 text-[16px]">→</div>
+          <div className="flex items-center text-text-muted text-[16px]">→</div>
 
           {/* TO: fixed destination */}
-          <div className="border border-gray-100 rounded-md p-2 bg-gray-50 flex flex-col">
-            <p className="text-[10px] text-gray-400 uppercase tracking-wider px-1 pt-1">To</p>
+          <div className="border border-border rounded-md p-2 bg-surface-muted flex flex-col">
+            <p className="text-[10px] text-text-muted uppercase tracking-wider px-1 pt-1">To</p>
             <div className="flex-1 flex flex-col items-center justify-center gap-1 py-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -173,9 +173,9 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
                 height={32}
                 className="w-8 h-8 rounded-full object-cover"
               />
-              <p className="text-[13px] text-black font-medium">Arc USDC</p>
-              <p className="text-[10px] text-gray-400 font-mono">Testnet · domain 26</p>
-              <p className="text-[10px] text-gray-400">fixed destination</p>
+              <p className="text-[13px] text-text-primary font-medium">Arc USDC</p>
+              <p className="text-[10px] text-text-muted font-mono">Testnet · domain 26</p>
+              <p className="text-[10px] text-text-muted">fixed destination</p>
             </div>
           </div>
         </div>
@@ -186,13 +186,13 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
             onChange={(e) => setAmount(e.target.value)}
             placeholder="5"
             inputMode="decimal"
-            className="border border-gray-100 px-3 py-2 text-[13px] rounded-md focus:border-accent focus:outline-none w-28 font-mono"
+            className="border border-border px-3 py-2 text-[13px] rounded-md focus:border-accent focus:outline-none w-28 font-mono"
           />
-          <span className="text-[12px] text-gray-400 font-mono">USDC</span>
+          <span className="text-[12px] text-text-muted font-mono">USDC</span>
           <button
             onClick={handleBridge}
             disabled={status === "bridging" || status === "switching" || !isConnected}
-            className="ml-auto px-4 py-2 text-[13px] font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors disabled:opacity-50"
+            className="ml-auto px-4 py-2 text-[13px] font-medium text-surface bg-text-primary rounded-md hover:opacity-90 transition-colors disabled:opacity-50"
           >
             {status === "switching"
               ? "Switching chain…"
@@ -208,7 +208,7 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
         {status !== "idle" && (
           <p
             className={`text-[12px] font-mono break-all ${
-              status === "error" ? "text-red" : status === "success" ? "text-green" : "text-gray-500"
+              status === "error" ? "text-red" : status === "success" ? "text-green" : "text-text-secondary"
             }`}
           >
             {detail}
@@ -219,7 +219,7 @@ export function BridgeModal({ onClose }: { onClose: () => void }) {
             href={addressUrl(address)}
             target="_blank"
             rel="noopener noreferrer"
-            className="block text-[11px] text-gray-400 hover:text-black transition-colors font-mono"
+            className="block text-[11px] text-text-muted hover:text-text-primary transition-colors font-mono"
           >
             Watch wallet on Arcscan ↗
           </a>

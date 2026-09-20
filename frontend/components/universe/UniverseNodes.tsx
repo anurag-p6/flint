@@ -46,11 +46,11 @@ export function ContributorNode({
       {/* selection ring */}
       {selected ? <circle r={r + 4} fill="none" strokeWidth={2} className="stroke-accent" /> : null}
       {/* fallback disc + initials (always underneath) */}
-      <circle r={r} className="fill-gray-100" />
+      <circle r={r} className="fill-surface-muted" />
       <text
         textAnchor="middle"
         dy="0.35em"
-        className="fill-gray-400 select-none"
+        className="fill-text-muted select-none"
         style={{ fontSize: Math.max(10, r * 0.55) }}
       >
         {initials(label)}
@@ -96,12 +96,12 @@ export function HubNode({
       {selected ? <circle r={r + 4} fill="none" strokeWidth={2} className="stroke-accent" /> : null}
       <circle
         r={r}
-        className={isGrant ? "fill-accent" : hub.kind === "repo" ? "fill-black" : "fill-gray-100"}
+        className={isGrant ? "fill-accent" : hub.kind === "repo" ? "fill-text-primary" : "fill-surface-muted"}
       />
       <text
         textAnchor="middle"
         dy="0.35em"
-        className={`select-none font-medium ${isGrant || hub.kind === "repo" ? "fill-white" : "fill-gray-400"}`}
+        className={`select-none font-medium ${isGrant || hub.kind === "repo" ? "fill-surface" : "fill-text-muted"}`}
         style={{ fontSize: Math.max(9, Math.min(13, r * 0.42)) }}
       >
         {hub.kind === "unknown" ? shortHashLabel(hub.label) : hubLabelShort(hub.label)}
@@ -152,7 +152,7 @@ export function CertEdge({
       y2={y2}
       strokeWidth={highlighted ? width + 1.5 : width}
       opacity={dimmed ? 0.08 : 0.9}
-      className={highlighted ? "stroke-accent" : "stroke-gray-100"}
+      className={highlighted ? "stroke-accent" : "stroke-border"}
       style={{ transition: "opacity 150ms ease-out" }}
     >
       <title>{`Receipt #${id}`}</title>
